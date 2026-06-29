@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .zone import Zone
-    from .drone import Drone
+
 
 class Connections:
     """
@@ -14,21 +14,41 @@ class Connections:
         zone_2: "Zone",
         max_link_capacity: int = 1,
     ):
-        self.connections: tuple["Zone", "Zone"] = (zone_1, zone_2)
+        self.zones: tuple["Zone", "Zone"] = (zone_1, zone_2)
         self.max_link_capacity: int = max_link_capacity
-        self.moving: int
+        self.moving: int = 0
     
     def can_go(self) -> bool:
-        return self.moving < self.max_link_capacity
+        """
+        Define if the drone can go
 
-    def cross_connection(self, drone: "Drone") -> None:
+        returns:
+            bool: if the moving is less than max_link_capacity
+        """
+        return self.moving <= self.max_link_capacity
+    
+    def moving_to_connection(self) -> bool:
         if not self.can_go():
             return False
         self.moving += 1
-        self.connections[0].take_from_zone(drone)
-        self.connections[1].move_to_zone(drone)
-        self.moving -= 1
+
+    def arrive(self) -> None:
+        if self.moving > 0:
+            self.moving -= 1
+
+    def cross_connection(self, zone: "Zone") -> "Zone":
+        if not self.can_go():
+            return False
+        self.moving_to_connection()
+        return self.zones[1] if self.zones[0] == zone else self.zones[0]
 
 
 if __name__ ==  "__main__":
-    pass
+    zone_1 = Zone(None, None, None, None, None, None)
+    zone_2 = Zone(None, None, None, None, None, None)
+    con =  Connections(zone_1, zone_2, 2)
+    con.cross_connection(zone_1)
+    con.cross_connection(zone_2)
+    con.cross_connection(zone_2)
+
+    print(con.can_go())
