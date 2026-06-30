@@ -15,7 +15,6 @@ class Drone:
         self.destination: "Zone" = None
         self.current_connection: "Connections" = None
 
-
     def deslocate(self, zone: "Zone", connection: "Connections") -> bool:
         """
         This function move the drone across connection

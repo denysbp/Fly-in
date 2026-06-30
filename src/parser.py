@@ -1,4 +1,5 @@
 import sys
+from typing import List
 
 
 class ParserError(Exception):
@@ -16,6 +17,42 @@ class Parser:
         self.hubs: dict[str, dict] = {}
         self.connections: list[tuple[str, str]] = []
         self.hubs_names = []
+
+    def parse_brackets(self, brackets: str, nb_line: int) -> List:
+        brackets = brackets.removeprefix("[")
+        brackets = brackets.removesuffix("]")
+        plus_time = 0
+        for c in brackets:
+            if "=" in c:
+                plus_time += 1
+        if not plus_time:
+            key, value = brackets.split("=", 2)
+            value = value.strip()
+            key = key.strip()
+            if "color" in key:
+                if value.isdigit():
+                    raise ParserError(
+                        f"Invalid type of color for [{value}]"
+                    )
+                return [(key, value.strip().upper())]
+
+            elif "max_drones" in key:
+                if not value.isdigit():
+                    raise ParserError(
+                        "Max drones values should be numbers"
+                    )
+                return [(key, int(value))]
+
+            elif "zone" in key:
+                return [(key, value)]
+
+            elif "max_link_capacity" in key:
+                if not value.isdigit():
+                    raise ParserError(
+                        f"Not digit value: {value}"
+                    )
+        elif plus_time == 1:
+            pass  # <- missing code
 
     def parse_line(self, line: str, nb_line: int) -> None:
         valid_brackets = 0
@@ -105,6 +142,22 @@ class Parser:
                     sys.exit(1)
         elif valid_brackets:
             key, value = line.split(":", 1)
+            key = key.strip()
+            if "start_hub" in key:
+                value = value.strip()
+                name, x, y, brackets = value.split(" ")
+
+                if x.isdigit() and y.isdigit():
+                    x = int(x)
+                    y = int(y)
+
+                temp_list = [
+                    name,
+                    x,
+                    y
+                ]
+                self.hubs["start_hub"] = temp_list
+                self.hubs_names.append(name)
 
     def parsing(self) -> None:
         """
@@ -134,6 +187,7 @@ if __name__ == "__main__":
     parser = Parser(file)
     parser.parsing()
     print(f"nb_drones: {parser.nb_drones}")
+    print(parser.hubs)
     print(parser.hubs_names)
     print(parser.connections)
     for hubs in parser.hubs_names:
