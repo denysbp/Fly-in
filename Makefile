@@ -1,6 +1,8 @@
 PY := python3
 PACKAGE := src/
 
+MODELS := $(PACKAGE)models/
+VISUALIZATION := $(PACKAGE)visualization/
 
 install_venv:
 	$(PY) -m venv .venv
@@ -19,4 +21,6 @@ lint-strict:
 
 clean:
 	rm -rf $(PACKAGE)__pycache__
+	rm -rf $(MODELS)__pycache__
+	rm -rf $(VISUALIZATION)__pycache__
 	rm -rf __pycache__

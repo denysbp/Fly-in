@@ -17,7 +17,7 @@ class Connections:
         self.zones: tuple["Zone", "Zone"] = (zone_1, zone_2)
         self.max_link_capacity: int = max_link_capacity
         self.moving: int = 0
-    
+
     def can_go(self) -> bool:
         """
         Define if the drone can go
@@ -26,7 +26,7 @@ class Connections:
             bool: if the moving is less than max_link_capacity
         """
         return self.moving <= self.max_link_capacity
-    
+
     def moving_to_connection(self) -> bool:
         if not self.can_go():
             return False
@@ -43,10 +43,10 @@ class Connections:
         return self.zones[1] if self.zones[0] == zone else self.zones[0]
 
 
-if __name__ ==  "__main__":
+if __name__ == "__main__":
     zone_1 = Zone(None, None, None, None, None, None)
     zone_2 = Zone(None, None, None, None, None, None)
-    con =  Connections(zone_1, zone_2, 2)
+    con = Connections(zone_1, zone_2, 2)
     con.cross_connection(zone_1)
     con.cross_connection(zone_2)
     con.cross_connection(zone_2)

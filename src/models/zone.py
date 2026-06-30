@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from .drone import Drone
 
+
 class ZoneType(str, Enum):
     """
     Zone types
@@ -13,6 +14,7 @@ class ZoneType(str, Enum):
     blocked = "blocked"
     priority = "priority"
 
+
 class ZoneColor:
     """
     Color class for the zones
@@ -21,6 +23,7 @@ class ZoneColor:
         self.RED = (235, 64, 52)
         self.BLUE = (15, 73, 219)
         self.BLACK = (0, 0, 0)
+
 
 class Zone:
     def __init__(
@@ -54,7 +57,6 @@ class Zone:
         self.x: int
         self.y: int
 
-
     def zone_cost(self) -> int:
         """
         Check the movement cost for this zone
@@ -63,7 +65,6 @@ class Zone:
             int: The cost for movement
         """
         return 1 if self.type.value != "restricted" else 2
-
 
     def move_to_zone(self, drone: "Drone") -> bool:
         """
@@ -81,7 +82,6 @@ class Zone:
         else:
             return False
 
-
     def take_from_zone(self, drone) -> bool:
         """
         See if its possible to add the drone to the zone
@@ -96,7 +96,7 @@ class Zone:
         return True
 
 
-if __name__ ==  "__main__":
+if __name__ == "__main__":
     color = ZoneColor()
     type = ZoneType.normal.value
     zone = Zone("hub", color.RED, 7, 9, 4, type)
