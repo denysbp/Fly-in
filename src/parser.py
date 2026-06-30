@@ -1,5 +1,5 @@
 import sys
-from typing import List
+from typing import List, Tuple, Union
 
 
 class ParserError(Exception):
@@ -15,44 +15,60 @@ class Parser:
         self.map: str = map
         self.nb_drones: int = 0
         self.hubs: dict[str, dict] = {}
-        self.connections: list[tuple[str, str]] = []
+        self.connections: list[tuple[str, str, Union[int | None]]] = []
         self.hubs_names = []
 
     def parse_brackets(self, brackets: str, nb_line: int) -> List:
         brackets = brackets.removeprefix("[")
         brackets = brackets.removesuffix("]")
         plus_time = 0
+        output_list = []
         for c in brackets:
-            if "=" in c:
+            if " " in c:
                 plus_time += 1
         if not plus_time:
-            key, value = brackets.split("=", 2)
-            value = value.strip()
-            key = key.strip()
-            if "color" in key:
-                if value.isdigit():
-                    raise ParserError(
-                        f"Invalid type of color for [{value}]"
-                    )
-                return [(key, value.strip().upper())]
-
-            elif "max_drones" in key:
-                if not value.isdigit():
-                    raise ParserError(
-                        "Max drones values should be numbers"
-                    )
-                return [(key, int(value))]
-
-            elif "zone" in key:
-                return [(key, value)]
-
-            elif "max_link_capacity" in key:
-                if not value.isdigit():
-                    raise ParserError(
-                        f"Not digit value: {value}"
-                    )
+            output_list.append(self.brackets_output(brackets, nb_line))
+            return output_list
         elif plus_time == 1:
-            pass  # <- missing code
+            temp_1, temp_2 = brackets.split(" ", 2)
+            output_list.append(self.brackets_output(temp_1, nb_line))
+            output_list.append(self.brackets_output(temp_2, nb_line))
+            return output_list
+
+        elif plus_time == 2:
+            temp_1, temp_2, temp_3 = brackets.split(" ", 3)
+            output_list.append(self.brackets_output(temp_1, nb_line))
+            output_list.append(self.brackets_output(temp_2, nb_line))
+            output_list.append(self.brackets_output(temp_3, nb_line))
+            return output_list
+
+    def brackets_output(self, config: str, nb_line: int) -> Tuple:
+        key, value = config.split("=", 2)
+        value = value.strip()
+        key = key.strip()
+        if "color" in key:
+            if value.isdigit():
+                raise ParserError(
+                    f"Invalid type of color for [{value}] line:{nb_line}"
+                )
+            return (key, value.strip().upper())
+
+        elif "max_drones" in key:
+            if not value.isdigit():
+                raise ParserError(
+                    f"Max drones values should be numbers line:{nb_line}"
+                )
+            return (key, int(value))
+
+        elif "zone" in key:
+            return (key, value)
+
+        elif "max_link_capacity" in key:
+            if not value.isdigit():
+                raise ParserError(
+                    f"Not digit value: {value} line:{nb_line}"
+                )
+            return (key, int(value))
 
     def parse_line(self, line: str, nb_line: int) -> None:
         valid_brackets = 0
@@ -72,7 +88,7 @@ class Parser:
             raise ParserError(
                 f"We find a error with brackets on line:{nb_line}:{temp}"
             )
-        if not valid_brackets:
+        elif not valid_brackets:
             key, value = line.split(":", 1)
             key = key.strip()
             if "nb_drones" in key:
@@ -140,23 +156,80 @@ class Parser:
                         f"Connections should be: zone_1-zone_2, line:{nb_line}"
                     )
                     sys.exit(1)
-        elif valid_brackets:
+        elif valid_brackets == 2:
             key, value = line.split(":", 1)
             key = key.strip()
             if "start_hub" in key:
                 value = value.strip()
-                name, x, y, brackets = value.split(" ")
+                parts = value.split(" ", 3)
+                name, x, y, brackets = parts
+                if x.isdigit() and y.isdigit():
+                    x = int(x)
+                    y = int(y)
+                else:
+                    pass
+                temp_tuple = self.parse_brackets(brackets, nb_line)
+                temp_list = [
+                    name,
+                    x,
+                    y,
+                    temp_tuple
+                ]
+                self.hubs["start_hub"] = temp_list
+                self.hubs_names.append(name)
+            elif "hub" in key:
+                value = value.strip()
+                parts = value.split(" ", 3)
+                name, x, y, brackets = parts
 
                 if x.isdigit() and y.isdigit():
                     x = int(x)
                     y = int(y)
-
+                temp_tuple = self.parse_brackets(brackets, nb_line)
                 temp_list = [
                     name,
                     x,
-                    y
+                    y,
+                    temp_tuple
                 ]
-                self.hubs["start_hub"] = temp_list
+                self.hubs[name] = temp_list
+                self.hubs_names.append(name)
+            elif "connection" in key:
+                value = value.strip()
+                try:
+                    connections, brackets = value.split(" ", 1)
+                    zone_1, zone_2 = connections.split("-", 1)
+                    temp = self.parse_brackets(brackets, nb_line)
+                    if zone_1 not in self.hubs_names:
+                        raise ParserError(
+                            f"The zone: {zone_1} don't exist"
+                        )
+                    elif zone_2 not in self.hubs_names:
+                        raise ParserError(
+                            f"The zone: {zone_2} don't exist"
+                        )
+                    self.connections.append((zone_1, zone_2, temp))
+                except TypeError:
+                    print(
+                        f"Connections should be: zone_1-zone_2, line:{nb_line}"
+                    )
+                    sys.exit(1)
+            elif "end_hub" in key:
+                value = value.strip()
+                parts = value.split(" ", 3)
+                name, x, y, brackets = parts
+
+                if x.isdigit() and y.isdigit():
+                    x = int(x)
+                    y = int(y)
+                temp_tuple = self.parse_brackets(brackets, nb_line)
+                temp_list = [
+                    name,
+                    x,
+                    y,
+                    temp_tuple
+                ]
+                self.hubs["end_hub"] = temp_list
                 self.hubs_names.append(name)
 
     def parsing(self) -> None:
