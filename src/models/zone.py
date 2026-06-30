@@ -1,4 +1,8 @@
 from enum import Enum
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from .drone import Drone
 
 class ZoneType(str, Enum):
     """
@@ -49,19 +53,19 @@ class Zone:
         self.type:  ZoneType = type
         self.x: int
         self.y: int
-    
+
 
     def zone_cost(self) -> int:
         """
         Check the movement cost for this zone
 
-        returns: 
+        returns:
             int: The cost for movement
         """
         return 1 if self.type.value != "restricted" else 2
 
 
-    def move_to_zone(self, drone) -> bool:
+    def move_to_zone(self, drone: "Drone") -> bool:
         """
         Adds the new drone to the zone.
 
@@ -90,7 +94,7 @@ class Zone:
         self.occupation -= 1
         self.current_drones.remove(drone)
         return True
-    
+
 
 if __name__ ==  "__main__":
     color = ZoneColor()
