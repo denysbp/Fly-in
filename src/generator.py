@@ -44,7 +44,7 @@ class Generator:
             elif "start_hub" in key:
                 self.start = self.zone_control(name, x, y, config)
                 continue
-            self.zone_control(name, x, y, config)
+            self.zones.append(self.zone_control(name, x, y, config))
 
     def zone_control(
         self,
@@ -62,7 +62,6 @@ class Generator:
                     x,
                     y
                 )
-                self.zones.append(zone)
                 return zone
             elif config[0][0] == "zone":
                 zone_type = config[0][1]
@@ -72,7 +71,6 @@ class Generator:
                     y=y,
                     type=zone_type
                 )
-                self.zones.append(zone)
                 return zone
             elif config[0][0] == "max_drones":
                 max_drones = config[0][1]
@@ -82,9 +80,9 @@ class Generator:
                     y=y,
                     max_drones=max_drones
                 )
-                self.zones.append(zone)
                 return zone
         elif len(config) == 2:
+            print(config)
             if config[0][0] == "color" and config[1][0] == "max_drones":
                 color = config[0][1]
                 max_drones = config[1][1]
@@ -95,7 +93,6 @@ class Generator:
                     y,
                     max_drones
                 )
-                self.zones.append(zone)
                 return zone
             elif config[0][0] == "zone" and config[1][0] == "color":
                 zone_type = config[0][1]
@@ -107,7 +104,6 @@ class Generator:
                     y,
                     type=zone_type
                 )
-                self.zones.append(zone)
                 return zone
             elif config[0][0] == "zone" and config[1][0] == "max_drones":
                 zone_type = config[0][1]
@@ -119,7 +115,6 @@ class Generator:
                     y=y,
                     type=zone_type
                 )
-                self.zones.append(zone)
                 return zone
         elif len(config) == 3:
             zone_type = config[0][1]

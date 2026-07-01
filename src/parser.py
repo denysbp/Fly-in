@@ -23,6 +23,11 @@ class Parser:
         brackets = brackets.removesuffix("]")
         plus_time = 0
         output_list = []
+        order = {
+            "zone": 0,
+            "color": 1,
+            "max_drones": 2,
+        }
         for c in brackets:
             if " " in c:
                 plus_time += 1
@@ -33,8 +38,11 @@ class Parser:
 
         elif plus_time == 1:
             temp_1, temp_2 = brackets.split(" ", 2)
+            if "color" not in temp_1:
+                temp_1, temp_2 = self.swap_values(temp_1, temp_2)
             output_list.append(self.brackets_output(temp_1, nb_line))
             output_list.append(self.brackets_output(temp_2, nb_line))
+            output_list.sort(key=lambda x: order[x[0]])
             return output_list
 
         elif plus_time == 2:
@@ -42,7 +50,11 @@ class Parser:
             output_list.append(self.brackets_output(temp_1, nb_line))
             output_list.append(self.brackets_output(temp_2, nb_line))
             output_list.append(self.brackets_output(temp_3, nb_line))
+            output_list.sort(key=lambda x: order[x[0]])
             return output_list
+
+    def swap_values(self, value_1, value_2) -> tuple:
+        return value_2, value_1
 
     def brackets_output(self, config: str, nb_line: int) -> Tuple:
         key, value = config.split("=", 2)
