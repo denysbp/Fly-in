@@ -103,10 +103,19 @@ class Parser:
                     )
             elif "start_hub" in key:
                 value = value.strip()
+                valid_split = value.split(" ")
+                if len(valid_split) != 3:
+                    raise ParserError(
+                        f"Are missing values on line {nb_line}"
+                    )
                 name, x, y = value.split(" ")
                 if x.isdigit() and y.isdigit():
                     x = int(x)
                     y = int(y)
+                else:
+                    raise ParserError(
+                        f"You passed Non-digit values on line {nb_line}"
+                    )
                 temp_list = [
                     name,
                     x,
@@ -116,10 +125,19 @@ class Parser:
                 self.hubs_names.append(name)
             elif "end_hub" in key:
                 value = value.strip()
+                valid_split = value.split(" ")
+                if len(valid_split) != 3:
+                    raise ParserError(
+                        f"Are missing values on line {nb_line}"
+                    )
                 name, x, y = value.split(" ")
                 if x.isdigit() and y.isdigit():
                     x = int(x)
                     y = int(y)
+                else:
+                    raise ParserError(
+                        f"You passed Non-digit values on line {nb_line}"
+                    )
                 temp_list = [
                     name,
                     x,
@@ -129,10 +147,19 @@ class Parser:
                 self.hubs_names.append(name)
             elif "hub" in key:
                 value = value.strip()
+                valid_split = value.split(" ")
+                if len(valid_split) != 3:
+                    raise ParserError(
+                        f"Are missing values on line {nb_line}"
+                    )
                 name, x, y = value.split(" ")
                 if x.isdigit() and y.isdigit():
                     x = int(x)
                     y = int(y)
+                else:
+                    raise ParserError(
+                        f"You passed Non-digit values on line {nb_line}"
+                    )
                 temp_list = [
                     name,
                     x,
@@ -169,7 +196,9 @@ class Parser:
                     x = int(x)
                     y = int(y)
                 else:
-                    pass
+                    raise ParserError(
+                        f"You passed Non-digit values on line {nb_line}"
+                    )
                 temp_tuple = self.parse_brackets(brackets, nb_line)
                 temp_list = [
                     name,
@@ -187,6 +216,10 @@ class Parser:
                 if x.isdigit() and y.isdigit():
                     x = int(x)
                     y = int(y)
+                else:
+                    raise ParserError(
+                        f"You passed Non-digit values on line {nb_line}"
+                    )
                 temp_tuple = self.parse_brackets(brackets, nb_line)
                 temp_list = [
                     name,
@@ -204,6 +237,10 @@ class Parser:
                 if x.isdigit() and y.isdigit():
                     x = int(x)
                     y = int(y)
+                else:
+                    raise ParserError(
+                        f"You passed Non-digit values on line {nb_line}"
+                    )
                 temp_tuple = self.parse_brackets(brackets, nb_line)
                 temp_list = [
                     name,
