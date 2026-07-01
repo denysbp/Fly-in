@@ -38,8 +38,6 @@ class Parser:
 
         elif plus_time == 1:
             temp_1, temp_2 = brackets.split(" ", 2)
-            if "color" not in temp_1:
-                temp_1, temp_2 = self.swap_values(temp_1, temp_2)
             output_list.append(self.brackets_output(temp_1, nb_line))
             output_list.append(self.brackets_output(temp_2, nb_line))
             output_list.sort(key=lambda x: order[x[0]])
@@ -53,235 +51,249 @@ class Parser:
             output_list.sort(key=lambda x: order[x[0]])
             return output_list
 
-    def swap_values(self, value_1, value_2) -> tuple:
-        return value_2, value_1
-
     def brackets_output(self, config: str, nb_line: int) -> Tuple:
-        key, value = config.split("=", 2)
-        value = value.strip()
-        key = key.strip()
-        if "color" in key:
-            if value.isdigit():
-                raise ParserError(
-                    f"Invalid type of color for [{value}] line:{nb_line}"
-                )
-            return (key, value.strip().upper())
+        try:
+            key, value = config.split("=", 2)
+            value = value.strip()
+            key = key.strip()
+            if "color" in key:
+                if value.isdigit():
+                    raise ParserError(
+                        f"Invalid type of color for [{value}] line:{nb_line}"
+                    )
+                return (key, value.strip().upper())
 
-        elif "max_drones" in key:
-            if not value.isdigit():
-                raise ParserError(
-                    f"Max drones values should be numbers line:{nb_line}"
-                )
-            return (key, int(value))
+            elif "max_drones" in key:
+                if not value.isdigit():
+                    raise ParserError(
+                        f"Max drones values should be numbers line:{nb_line}"
+                    )
+                return (key, int(value))
 
-        elif "zone" in key:
-            return (key, value)
+            elif "zone" in key:
+                return (key, value)
 
-        elif "max_link_capacity" in key:
-            if not value.isdigit():
+            elif "max_link_capacity" in key:
+                if not value.isdigit():
+                    raise ParserError(
+                        f"Not digit value: {value} line:{nb_line}"
+                    )
+                return (key, int(value))
+            else:
                 raise ParserError(
-                    f"Not digit value: {value} line:{nb_line}"
+                    f"Type '{key}' invalid for this parsing line:{nb_line}"
                 )
-            return (key, int(value))
+        except ValueError:
+            print(
+                f"Something went wrong when spliting the values line:{nb_line}"
+            )
+            sys.exit(1)
 
     def parse_line(self, line: str, nb_line: int) -> None:
         valid_brackets = 0
         row = 0
-        for row, c in enumerate(line, 1):
-            if "[" in c:
-                valid_brackets += 1
-                temp = row
-                if valid_brackets > 2:
-                    break
-            elif "]" in c:
-                valid_brackets += 1
-                temp = row
-                if valid_brackets > 2:
-                    break
-        if valid_brackets == 1 or valid_brackets > 2:
-            raise ParserError(
-                f"We find a error with brackets on line:{nb_line}:{temp}"
-            )
-        elif not valid_brackets:
-            key, value = line.split(":", 1)
-            key = key.strip()
-            if "nb_drones" in key:
-                value = value.strip()
-                if value.isdigit():
-                    self.nb_drones = int(value)
-                else:
-                    raise ParserError(
-                        "Invalid number of Drones, not digit value"
-                    )
-            elif "start_hub" in key:
-                value = value.strip()
-                valid_split = value.split(" ")
-                if len(valid_split) != 3:
-                    raise ParserError(
-                        f"Are missing values on line {nb_line}"
-                    )
-                name, x, y = value.split(" ")
-                if x.isdigit() and y.isdigit():
-                    x = int(x)
-                    y = int(y)
-                else:
-                    raise ParserError(
-                        f"You passed Non-digit values on line {nb_line}"
-                    )
-                temp_list = [
-                    name,
-                    x,
-                    y
-                ]
-                self.hubs["start_hub"] = temp_list
-                self.hubs_names.append(name)
-            elif "end_hub" in key:
-                value = value.strip()
-                valid_split = value.split(" ")
-                if len(valid_split) != 3:
-                    raise ParserError(
-                        f"Are missing values on line {nb_line}"
-                    )
-                name, x, y = value.split(" ")
-                if x.isdigit() and y.isdigit():
-                    x = int(x)
-                    y = int(y)
-                else:
-                    raise ParserError(
-                        f"You passed Non-digit values on line {nb_line}"
-                    )
-                temp_list = [
-                    name,
-                    x,
-                    y
-                ]
-                self.hubs["end_hub"] = temp_list
-                self.hubs_names.append(name)
-            elif "hub" in key:
-                value = value.strip()
-                valid_split = value.split(" ")
-                if len(valid_split) != 3:
-                    raise ParserError(
-                        f"Are missing values on line {nb_line}"
-                    )
-                name, x, y = value.split(" ")
-                if x.isdigit() and y.isdigit():
-                    x = int(x)
-                    y = int(y)
-                else:
-                    raise ParserError(
-                        f"You passed Non-digit values on line {nb_line}"
-                    )
-                temp_list = [
-                    name,
-                    x,
-                    y
-                ]
-                self.hubs[name] = temp_list
-                self.hubs_names.append(name)
-            elif "connection" in key:
-                value = value.strip()
-                try:
-                    zone_1, zone_2 = value.split("-", 1)
-                    if zone_1 not in self.hubs_names:
+        try:
+            for row, c in enumerate(line, 1):
+                if "[" in c:
+                    valid_brackets += 1
+                    temp = row
+                    if valid_brackets > 2:
+                        break
+                elif "]" in c:
+                    valid_brackets += 1
+                    temp = row
+                    if valid_brackets > 2:
+                        break
+            if valid_brackets == 1 or valid_brackets > 2:
+                raise ParserError(
+                    f"We find a error with brackets on line:{nb_line}:{temp}"
+                )
+            elif not valid_brackets:
+                key, value = line.split(":", 1)
+                key = key.strip()
+                if "nb_drones" in key:
+                    value = value.strip()
+                    if value.isdigit():
+                        self.nb_drones = int(value)
+                    else:
                         raise ParserError(
-                            f"The zone: {zone_1} don't exist"
+                            "Invalid number of Drones, not digit/positive " +
+                            "value"
                         )
-                    elif zone_2 not in self.hubs_names:
+                elif "start_hub" in key:
+                    value = value.strip()
+                    valid_split = value.split(" ")
+                    if len(valid_split) != 3:
                         raise ParserError(
-                            f"The zone: {zone_2} don't exist"
+                            "The values passed " +
+                            f"don't follow the rules {nb_line}"
                         )
-                    self.connections.append((zone_1, zone_2))
-                except TypeError:
-                    print(
-                        f"Connections should be: zone_1-zone_2, line:{nb_line}"
-                    )
-                    sys.exit(1)
-        elif valid_brackets == 2:
-            key, value = line.split(":", 1)
-            key = key.strip()
-            if "start_hub" in key:
-                value = value.strip()
-                parts = value.split(" ", 3)
-                name, x, y, brackets = parts
-                if x.isdigit() and y.isdigit():
-                    x = int(x)
-                    y = int(y)
-                else:
-                    raise ParserError(
-                        f"You passed Non-digit values on line {nb_line}"
-                    )
-                temp_tuple = self.parse_brackets(brackets, nb_line)
-                temp_list = [
-                    name,
-                    x,
-                    y,
-                    temp_tuple
-                ]
-                self.hubs["start_hub"] = temp_list
-                self.hubs_names.append(name)
-            elif "end_hub" in key:
-                value = value.strip()
-                parts = value.split(" ", 3)
-                name, x, y, brackets = parts
+                    name, x, y = value.split(" ")
+                    try:
+                        x = int(x)
+                        y = int(y)
+                    except ValueError:
+                        raise ParserError(
+                            f"You passed Non-digit values on line {nb_line}"
+                        )
+                    temp_list = [
+                        name,
+                        x,
+                        y
+                    ]
+                    self.hubs["start_hub"] = temp_list
+                    self.hubs_names.append(name)
+                elif "end_hub" in key:
+                    value = value.strip()
+                    valid_split = value.split(" ")
+                    if len(valid_split) != 3:
+                        raise ParserError(
+                            f"Are missing values on line {nb_line}"
+                        )
+                    name, x, y = value.split(" ")
+                    try:
+                        x = int(x)
+                        y = int(y)
+                    except ValueError:
+                        raise ParserError(
+                            f"You passed Non-digit values on line {nb_line}"
+                        )
+                    temp_list = [
+                        name,
+                        x,
+                        y
+                    ]
+                    self.hubs["end_hub"] = temp_list
+                    self.hubs_names.append(name)
+                elif "hub" in key:
+                    value = value.strip()
+                    valid_split = value.split(" ")
+                    if len(valid_split) != 3:
+                        raise ParserError(
+                            f"Are missing values on line {nb_line}"
+                        )
+                    name, x, y = value.split(" ")
+                    try:
+                        x = int(x)
+                        y = int(y)
+                    except ValueError:
+                        raise ParserError(
+                            f"You passed Non-digit values on line {nb_line}"
+                        )
+                    temp_list = [
+                        name,
+                        x,
+                        y
+                    ]
+                    self.hubs[name] = temp_list
+                    self.hubs_names.append(name)
+                elif "connection" in key:
+                    value = value.strip()
+                    try:
+                        zone_1, zone_2 = value.split("-", 1)
+                        if zone_1 not in self.hubs_names:
+                            raise ParserError(
+                                f"The zone: {zone_1} don't exist"
+                            )
+                        elif zone_2 not in self.hubs_names:
+                            raise ParserError(
+                                f"The zone: {zone_2} don't exist"
+                            )
+                        self.connections.append((zone_1, zone_2))
+                    except TypeError:
+                        print(
+                            "Connections should be: zone_1-zone_2," +
+                            f" line:{nb_line}"
+                        )
+                        sys.exit(1)
+            elif valid_brackets == 2:
+                key, value = line.split(":", 1)
+                key = key.strip()
+                if "start_hub" in key:
+                    value = value.strip()
+                    parts = value.split(" ", 3)
+                    name, x, y, brackets = parts
+                    try:
+                        x = int(x)
+                        y = int(y)
+                    except ValueError:
+                        raise ParserError(
+                            f"You passed Non-digit values on line {nb_line}"
+                        )
+                    temp_tuple = self.parse_brackets(brackets, nb_line)
+                    temp_list = [
+                        name,
+                        x,
+                        y,
+                        temp_tuple
+                    ]
+                    self.hubs["start_hub"] = temp_list
+                    self.hubs_names.append(name)
+                elif "end_hub" in key:
+                    value = value.strip()
+                    parts = value.split(" ", 3)
+                    name, x, y, brackets = parts
 
-                if x.isdigit() and y.isdigit():
-                    x = int(x)
-                    y = int(y)
-                else:
-                    raise ParserError(
-                        f"You passed Non-digit values on line {nb_line}"
-                    )
-                temp_tuple = self.parse_brackets(brackets, nb_line)
-                temp_list = [
-                    name,
-                    x,
-                    y,
-                    temp_tuple
-                ]
-                self.hubs["end_hub"] = temp_list
-                self.hubs_names.append(name)
-            elif "hub" in key:
-                value = value.strip()
-                parts = value.split(" ", 3)
-                name, x, y, brackets = parts
+                    try:
+                        x = int(x)
+                        y = int(y)
+                    except ValueError:
+                        raise ParserError(
+                            f"You passed Non-digit values on line {nb_line}"
+                        )
+                    temp_tuple = self.parse_brackets(brackets, nb_line)
+                    temp_list = [
+                        name,
+                        x,
+                        y,
+                        temp_tuple
+                    ]
+                    self.hubs["end_hub"] = temp_list
+                    self.hubs_names.append(name)
+                elif "hub" in key:
+                    value = value.strip()
+                    parts = value.split(" ", 3)
+                    name, x, y, brackets = parts
 
-                if x.isdigit() and y.isdigit():
-                    x = int(x)
-                    y = int(y)
-                else:
-                    raise ParserError(
-                        f"You passed Non-digit values on line {nb_line}"
-                    )
-                temp_tuple = self.parse_brackets(brackets, nb_line)
-                temp_list = [
-                    name,
-                    x,
-                    y,
-                    temp_tuple
-                ]
-                self.hubs[name] = temp_list
-                self.hubs_names.append(name)
-            elif "connection" in key:
-                value = value.strip()
-                try:
-                    connections, brackets = value.split(" ", 1)
-                    zone_1, zone_2 = connections.split("-", 1)
-                    temp = self.parse_brackets(brackets, nb_line)
-                    if zone_1 not in self.hubs_names:
+                    try:
+                        x = int(x)
+                        y = int(y)
+                    except ValueError:
                         raise ParserError(
-                            f"The zone: {zone_1} don't exist"
+                            f"You passed Non-digit values on line {nb_line}"
                         )
-                    elif zone_2 not in self.hubs_names:
-                        raise ParserError(
-                            f"The zone: {zone_2} don't exist"
+                    temp_tuple = self.parse_brackets(brackets, nb_line)
+                    temp_list = [
+                        name,
+                        x,
+                        y,
+                        temp_tuple
+                    ]
+                    self.hubs[name] = temp_list
+                    self.hubs_names.append(name)
+                elif "connection" in key:
+                    value = value.strip()
+                    try:
+                        connections, brackets = value.split(" ", 1)
+                        zone_1, zone_2 = connections.split("-", 1)
+                        temp = self.parse_brackets(brackets, nb_line)
+                        if zone_1 not in self.hubs_names:
+                            raise ParserError(
+                                f"The zone: {zone_1} don't exist"
+                            )
+                        elif zone_2 not in self.hubs_names:
+                            raise ParserError(
+                                f"The zone: {zone_2} don't exist"
+                            )
+                        self.connections.append((zone_1, zone_2, temp))
+                    except TypeError:
+                        print(
+                            f"zones: zone_1-zone_2, line:{nb_line}"
                         )
-                    self.connections.append((zone_1, zone_2, temp))
-                except TypeError:
-                    print(
-                        f"zones: zone_1-zone_2, line:{nb_line}"
-                    )
-                    sys.exit(1)
+                        sys.exit(1)
+        except ValueError as e:
+            print(f"{e} line:{nb_line}")
+            sys.exit(1)
 
     def parsing(self) -> None:
         """
@@ -293,6 +305,10 @@ class Parser:
         try:
             with open(self.map) as f:
                 lines = f.readlines()
+                if not lines:
+                    raise ParserError(
+                        "Nothing to read!"
+                    )
                 for nb_line, line in enumerate(lines, 1):
                     line = line.strip()
                     if line.startswith("#"):
@@ -308,6 +324,9 @@ class Parser:
             print(e)
             sys.exit(1)
         except PermissionError as e:
+            print(e)
+            sys.exit(1)
+        except FileNotFoundError as e:
             print(e)
             sys.exit(1)
 

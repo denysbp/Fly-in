@@ -20,7 +20,7 @@ class Generator:
             if len(connect) == 2:
                 max_link = 1
             else:
-                max_link = connect[2]
+                max_link = connect[2][0][1]
             connection = Connections(zone_1, zone_2, max_link)
             self.connections.append(connection)
 
@@ -40,9 +40,11 @@ class Generator:
             name, x, y, config = value
             if "end_hub" in key:
                 self.end = self.zone_control(name, x, y, config)
+                self.zones.append(self.end)
                 continue
             elif "start_hub" in key:
                 self.start = self.zone_control(name, x, y, config)
+                self.zones.append(self.start)
                 continue
             self.zones.append(self.zone_control(name, x, y, config))
 
@@ -82,7 +84,6 @@ class Generator:
                 )
                 return zone
         elif len(config) == 2:
-            print(config)
             if config[0][0] == "color" and config[1][0] == "max_drones":
                 color = config[0][1]
                 max_drones = config[1][1]
