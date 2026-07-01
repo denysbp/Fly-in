@@ -1,5 +1,6 @@
 from os import path
 
+
 class Color:
     def __init__(self):
         self.RED = (235, 64, 52)

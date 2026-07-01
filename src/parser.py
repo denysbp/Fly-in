@@ -26,9 +26,11 @@ class Parser:
         for c in brackets:
             if " " in c:
                 plus_time += 1
+
         if not plus_time:
             output_list.append(self.brackets_output(brackets, nb_line))
             return output_list
+
         elif plus_time == 1:
             temp_1, temp_2 = brackets.split(" ", 2)
             output_list.append(self.brackets_output(temp_1, nb_line))
@@ -177,6 +179,23 @@ class Parser:
                 ]
                 self.hubs["start_hub"] = temp_list
                 self.hubs_names.append(name)
+            elif "end_hub" in key:
+                value = value.strip()
+                parts = value.split(" ", 3)
+                name, x, y, brackets = parts
+
+                if x.isdigit() and y.isdigit():
+                    x = int(x)
+                    y = int(y)
+                temp_tuple = self.parse_brackets(brackets, nb_line)
+                temp_list = [
+                    name,
+                    x,
+                    y,
+                    temp_tuple
+                ]
+                self.hubs["end_hub"] = temp_list
+                self.hubs_names.append(name)
             elif "hub" in key:
                 value = value.strip()
                 parts = value.split(" ", 3)
@@ -211,26 +230,9 @@ class Parser:
                     self.connections.append((zone_1, zone_2, temp))
                 except TypeError:
                     print(
-                        f"Connections should be: zone_1-zone_2, line:{nb_line}"
+                        f"zones: zone_1-zone_2, line:{nb_line}"
                     )
                     sys.exit(1)
-            elif "end_hub" in key:
-                value = value.strip()
-                parts = value.split(" ", 3)
-                name, x, y, brackets = parts
-
-                if x.isdigit() and y.isdigit():
-                    x = int(x)
-                    y = int(y)
-                temp_tuple = self.parse_brackets(brackets, nb_line)
-                temp_list = [
-                    name,
-                    x,
-                    y,
-                    temp_tuple
-                ]
-                self.hubs["end_hub"] = temp_list
-                self.hubs_names.append(name)
 
     def parsing(self) -> None:
         """
@@ -251,6 +253,12 @@ class Parser:
                     self.parse_line(line, nb_line)
 
         except ParserError as e:
+            print(e)
+            sys.exit(1)
+        except TypeError as e:
+            print(e)
+            sys.exit(1)
+        except PermissionError as e:
             print(e)
             sys.exit(1)
 
