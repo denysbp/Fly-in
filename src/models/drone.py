@@ -9,7 +9,8 @@ class Drone:
     """
     Drone class
     """
-    def __init__(self, start_zone: "Zone"):
+    def __init__(self, start_zone: "Zone", id: int):
+        self.id: int = id
         self.current_zone: "Zone" = start_zone
         self.moving: bool = False
         self.destination: "Zone" = None

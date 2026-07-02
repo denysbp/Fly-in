@@ -30,8 +30,8 @@ class Generator:
                 return zone
 
     def create_drone(self) -> None:
-        for _ in range(self.parser.nb_drones):
-            drone = Drone(self.start)
+        for i in range(self.parser.nb_drones):
+            drone = Drone(self.start, i)
             self.drones.append(drone)
 
     def create_zone(self) -> None:

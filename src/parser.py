@@ -104,10 +104,12 @@ class Parser:
                     temp = row
                     if valid_brackets > 2:
                         break
+
             if valid_brackets == 1 or valid_brackets > 2:
                 raise ParserError(
                     f"We find a error with brackets on line:{nb_line}:{temp}"
                 )
+
             elif not valid_brackets:
                 key, value = line.split(":", 1)
                 key = key.strip()
@@ -206,6 +208,7 @@ class Parser:
                             f" line:{nb_line}"
                         )
                         sys.exit(1)
+
             elif valid_brackets == 2:
                 key, value = line.split(":", 1)
                 key = key.strip()
@@ -327,6 +330,9 @@ class Parser:
             print(e)
             sys.exit(1)
         except FileNotFoundError as e:
+            print(e)
+            sys.exit(1)
+        except IsADirectoryError as e:
             print(e)
             sys.exit(1)
 
