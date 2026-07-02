@@ -23,6 +23,15 @@ class ZoneColor:
         self.RED = (235, 64, 52)
         self.BLUE = (15, 73, 219)
         self.BLACK = (0, 0, 0)
+        self.GREEN = (23, 252, 3)
+        self.PURPLE = (111, 3, 252)
+        self.BROWN = (71, 50, 25)
+        self.MAROON = (107, 64, 13)
+        self.GOLD = (211, 175, 55)
+        self.DARKRED = (61, 2, 2)
+        self.CRIMSON = (220, 20, 60)
+        self.CYAN = (0, 255, 255)
+        self.ORANGE = (255, 165, 0)
 
 
 class Zone:
@@ -54,8 +63,8 @@ class Zone:
         self.occupation: int = 0
         self.current_drones: list = []
         self.type:  ZoneType = type
-        self.x: int
-        self.y: int
+        self.x: int = x
+        self.y: int = y
 
     def zone_cost(self) -> int:
         """
@@ -82,7 +91,7 @@ class Zone:
         else:
             return False
 
-    def take_from_zone(self, drone) -> bool:
+    def take_from_zone(self, drone: "Drone") -> bool:
         """
         See if its possible to add the drone to the zone
 
@@ -90,16 +99,7 @@ class Zone:
             bool: if the movement succed
        """
         if drone not in self.current_drones:
-            return
+            return False
         self.occupation -= 1
         self.current_drones.remove(drone)
         return True
-
-
-if __name__ == "__main__":
-    color = ZoneColor()
-    type = ZoneType.normal.value
-    zone = Zone("hub", color.RED, 7, 9, 4, type)
-    zone.occupation = 4
-    zone.move_to_zone("Df")
-    print(zone.current_drones)

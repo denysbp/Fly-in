@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from .zone import Zone
@@ -31,24 +31,14 @@ class Connections:
         if not self.can_go():
             return False
         self.moving += 1
+        return True
 
     def arrive(self) -> None:
         if self.moving > 0:
             self.moving -= 1
 
-    def cross_connection(self, zone: "Zone") -> "Zone":
+    def cross_connection(self, zone: "Zone") -> Union["Zone" | bool]:
         if not self.can_go():
             return False
         self.moving_to_connection()
         return self.zones[1] if self.zones[0] == zone else self.zones[0]
-
-
-if __name__ == "__main__":
-    zone_1 = Zone(None, None, None, None, None, None)
-    zone_2 = Zone(None, None, None, None, None, None)
-    con = Connections(zone_1, zone_2, 2)
-    con.cross_connection(zone_1)
-    con.cross_connection(zone_2)
-    con.cross_connection(zone_2)
-
-    print(con.can_go())

@@ -16,7 +16,7 @@ class Parser:
         self.nb_drones: int = 0
         self.hubs: dict[str, dict] = {}
         self.connections: list[tuple[str, str, Union[int | None]]] = []
-        self.hubs_names = []
+        self.hubs_names: List[str] = []
 
     def parse_brackets(self, brackets: str, nb_line: int) -> List:
         brackets = brackets.removeprefix("[")
@@ -71,6 +71,17 @@ class Parser:
                 return (key, int(value))
 
             elif "zone" in key:
+                types = [
+                    "normal",
+                    "restricted",
+                    "blocked",
+                    "priority"
+                ]
+                for type in types:
+                    if value not in types:
+                        raise ParserError(
+                            f"Invalid '{value}' for zone type line:{nb_line}"
+                        )
                 return (key, value)
 
             elif "max_link_capacity" in key:

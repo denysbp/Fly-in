@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
     from .zone import Zone
@@ -13,8 +13,8 @@ class Drone:
         self.id: int = id
         self.current_zone: "Zone" = start_zone
         self.moving: bool = False
-        self.destination: "Zone" = None
-        self.current_connection: "Connections" = None
+        self.destination: Union["Zone" | None] = None
+        self.current_connection: Union["Connections" | None] = None
 
     def deslocate(self, zone: "Zone", connection: "Connections") -> bool:
         """
@@ -23,7 +23,7 @@ class Drone:
         returns:
             bool: True if the operation succed, False if can't move
         """
-        destination: "Connections" = connection.cross_connection()
+        destination: Union["Zone" | bool] = connection.cross_connection(zone)
         if self.current_zone == zone:
             return False
         elif destination != zone:
