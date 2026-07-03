@@ -1,9 +1,12 @@
-import models
-from .parser import Parser
+from .models import Drone, Zone, Connections
+from .parser import Parser, ParserError
 from .generator import Generator
 
 __all__ = [
     "Parser",
     "Generator",
-    "models"
+    "Zone",
+    "ParserError",
+    "Drone",
+    "Connections"
 ]

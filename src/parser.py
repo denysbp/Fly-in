@@ -61,6 +61,30 @@ class Parser:
                     raise ParserError(
                         f"Invalid type of color for [{value}] line:{nb_line}"
                     )
+                value = value.strip().upper()
+                colors = [
+                    "RED",
+                    "BLUE",
+                    "BLACK",
+                    "GREEN",
+                    "PURPLE",
+                    "BROWN",
+                    "MAROON",
+                    "GOLD",
+                    "DARKRED",
+                    "CRIMSON",
+                    "CYAN",
+                    "ORANGE",
+                    "YELLOW",
+                    "VIOLET",
+                    "RAINBOW",
+                    "LIME",
+                    "MAGENTA"
+                ]
+                if value not in colors:
+                    raise ParserError(
+                        f"We cann't handle the color '{value}' line:{nb_line}"
+                    )
                 return (key, value.strip().upper())
 
             elif "max_drones" in key:

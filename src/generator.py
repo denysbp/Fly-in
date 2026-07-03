@@ -1,7 +1,7 @@
 from typing import List
 import sys
-from parser import Parser
-from models import Drone, Zone, Connections
+from .parser import Parser, ParserError
+from .models import Drone, Zone, Connections
 
 
 class Generator:
@@ -22,6 +22,8 @@ class Generator:
             else:
                 max_link = connect[2][0][1]
             connection = Connections(zone_1, zone_2, max_link)
+            zone_2.connections.append(connection)
+            zone_1.connections.append(connection)
             self.connections.append(connection)
 
     def find_target(self, name: str) -> Zone:
@@ -35,6 +37,14 @@ class Generator:
             self.drones.append(drone)
 
     def create_zone(self) -> None:
+        if "end_hub" not in self.parser.hubs.keys():
+            raise ParserError(
+                "We cann't find the end_hub"
+            )
+        elif "start_hub" not in self.parser.hubs.keys():
+            raise ParserError(
+                "We cann't find the start"
+            )
         value: list
         for key, value in self.parser.hubs.items():
             name, x, y, config = value

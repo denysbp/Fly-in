@@ -44,7 +44,7 @@ class Drone:
         if not self.moving:
             return False
         self.current_zone = self.destination
-        self.current_zone.move_to_zone(self)
+        self.current_zone.move_tmo_zone(self)
         self.destination = None
         self.moving = False
         self.current_connection = None

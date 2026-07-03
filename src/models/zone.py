@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 if TYPE_CHECKING:
     from .drone import Drone
+    from .connections import Connections
 
 
 class ZoneType(str, Enum):
@@ -15,23 +16,27 @@ class ZoneType(str, Enum):
     priority = "priority"
 
 
-class ZoneColor:
+class ZoneColor(Enum):
     """
     Color class for the zones
     """
-    def __init__(self):
-        self.RED = (235, 64, 52)
-        self.BLUE = (15, 73, 219)
-        self.BLACK = (0, 0, 0)
-        self.GREEN = (23, 252, 3)
-        self.PURPLE = (111, 3, 252)
-        self.BROWN = (71, 50, 25)
-        self.MAROON = (107, 64, 13)
-        self.GOLD = (211, 175, 55)
-        self.DARKRED = (61, 2, 2)
-        self.CRIMSON = (220, 20, 60)
-        self.CYAN = (0, 255, 255)
-        self.ORANGE = (255, 165, 0)
+    RED = (235, 64, 52)
+    BLUE = (15, 73, 219)
+    BLACK = (0, 0, 0)
+    GREEN = (23, 252, 3)
+    PURPLE = (111, 3, 252)
+    BROWN = (71, 50, 25)
+    MAROON = (107, 64, 13)
+    GOLD = (211, 175, 55)
+    DARKRED = (61, 2, 2)
+    CRIMSON = (220, 20, 60)
+    CYAN = (0, 255, 255)
+    ORANGE = (255, 165, 0)
+    YELLOW = (252, 186, 3)
+    VIOLET = (169, 3, 252)
+    RAINBOW = (52, 77, 217)
+    LIME = (0, 235, 31)
+    MAGENTA = (184, 16, 222)
 
 
 class Zone:
@@ -57,14 +62,40 @@ class Zone:
             y: Y coordinate
 
         """
+        types = {
+            "normal": ZoneType.normal,
+            "restricted": ZoneType.restricted,
+            "blocked": ZoneType.blocked,
+            "priority": ZoneType.priority
+        }
+        colors = {
+            "RED": ZoneColor.RED,
+            "BLUE": ZoneColor.BLUE,
+            "BLACK": ZoneColor.BLACK,
+            "GREEN": ZoneColor.GREEN,
+            "PURPLE": ZoneColor.PURPLE,
+            "BROWN": ZoneColor.BROWN,
+            "MAROON": ZoneColor.MAROON,
+            "GOLD": ZoneColor.GOLD,
+            "DARKRED": ZoneColor.DARKRED,
+            "CRIMSON": ZoneColor.CRIMSON,
+            "CYAN": ZoneColor.CYAN,
+            "ORANGE": ZoneColor.ORANGE,
+            "YELLOW": ZoneColor.YELLOW,
+            "VIOLET": ZoneColor.VIOLET,
+            "RAINBOW": ZoneColor.RAINBOW,
+            "LIME": ZoneColor.LIME,
+            "MAGENTA": ZoneColor.MAGENTA
+        }
         self.name: str = name
-        self.color: ZoneColor = color
+        self.color: ZoneColor = colors[color]
         self.max_capacity: int = max_drones
         self.occupation: int = 0
         self.current_drones: list = []
-        self.type:  ZoneType = type
+        self.type:  ZoneType = types[type]
         self.x: int = x
         self.y: int = y
+        self.connections: list["Connections"] = []
 
     def zone_cost(self) -> int:
         """

@@ -10,3 +10,4 @@ class algorithm:
         self.drones: List["Drone"] = generator.drones
         self.connections: List["Connections"] = generator.connections
         self.zones: List["Zone"] = generator.zones
+        self.moves
