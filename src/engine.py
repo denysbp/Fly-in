@@ -29,8 +29,8 @@ class Engine:
                     continue
                 elif drone.solved:
                     continue
+                destination = drone.destination # path do dijkstra
                 if destination is None:
-                    destination = drone.destination
                     connection = current_zone.find_connection(destination)
                     zones = [
                         zone for zone in self.zones

@@ -53,7 +53,7 @@ class Parser:
 
     def brackets_output(self, config: str, nb_line: int) -> Tuple:
         try:
-            key, value = config.split("=", 2)
+            key, value = config.split("=", 1)
             value = value.strip()
             key = key.strip()
             if "color" in key:
