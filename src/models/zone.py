@@ -134,3 +134,8 @@ class Zone:
         self.occupation -= 1
         self.current_drones.remove(drone)
         return True
+
+    def find_connection(self, zone: "Zone") -> "Connections":
+        for connection in self.connections:
+            if connection.zones[1] == zone:
+                return connection

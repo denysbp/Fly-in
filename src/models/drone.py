@@ -15,6 +15,7 @@ class Drone:
         self.moving: bool = False
         self.destination: Union["Zone" | None] = None
         self.current_connection: Union["Connections" | None] = None
+        self.solved: bool = False
 
     def deslocate(self, zone: "Zone", connection: "Connections") -> bool:
         """
