@@ -137,5 +137,5 @@ class Zone:
 
     def find_connection(self, zone: "Zone") -> "Connections":
         for connection in self.connections:
-            if connection.zones[1] == zone:
+            if zone in connection.zones:
                 return connection

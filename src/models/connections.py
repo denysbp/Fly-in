@@ -42,3 +42,6 @@ class Connections:
             return False
         self.moving_to_connection()
         return self.zones[1] if self.zones[0] == zone else self.zones[0]
+
+    def connection_end(self, zone: "Zone") -> "Zone":
+        return self.zones[1] if self.zones[0] == zone else self.zones[0]

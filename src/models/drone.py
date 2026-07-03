@@ -16,6 +16,8 @@ class Drone:
         self.destination: Union["Zone" | None] = None
         self.current_connection: Union["Connections" | None] = None
         self.solved: bool = False
+        self.index: int = 0
+        self.path: list["Zone"]
 
     def deslocate(self, zone: "Zone", connection: "Connections") -> bool:
         """
@@ -45,8 +47,9 @@ class Drone:
         if not self.moving:
             return False
         self.current_zone = self.destination
-        self.current_zone.move_tmo_zone(self)
+        self.current_zone.move_to_zone(self)
         self.destination = None
         self.moving = False
-        self.current_connection = None
+        self.current_connection.arrive()
+        self.index += 1
         return True
