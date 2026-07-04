@@ -17,13 +17,19 @@ class Color:
         self.ORANGE = (255, 165, 0)
 
 
-WIDTH = 760
-HEIGHT = 920
+WIDTH = 1260
+HEIGHT = 1840
 FPS = 60
 
 img_dir = path.join(path.dirname(__file__), 'img')
 drone_1 = path.join(img_dir, "drone1.jpeg")
-drone_2 = path.join(img_dir, "drone2.jpeg")
+drone_2 = path.join(img_dir, "drone2.png")
 drone_3 = path.join(img_dir, "drone3.jpeg")
 drone_4 = path.join(img_dir, "drone4.jpeg")
 rainbow = path.join(img_dir, "rainbow.jpg")
+plataform_1 = path.join(img_dir, "P01.png")
+plataform_2 = path.join(img_dir, "P02.png")
+plataform_3 = path.join(img_dir, "P03.png")
+plataform_4 = path.join(img_dir, "P04.png")
+plataform_5 = path.join(img_dir, "P05.png")
+plataform_6 = path.join(img_dir, "P06.png")

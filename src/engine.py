@@ -67,7 +67,7 @@ class Engine:
         self.start: "Zone" = generator.start
         self.end: "Zone" = generator.end
         self.turns: int = 0
-        self.out_put: List[List[str]] = []
+        self.out_put: List[str] = []
 
     def solver_path(self) -> None:
         for drone in self.drones:
@@ -100,13 +100,15 @@ class Engine:
                     drone.moving,
                     drone.solved
                 ]
-                if not drone.moving:
-                    continue
                 if drone.moving:
-                    name = f"{drone.current_connection.zones[0].name}"
-                elif drone.current_zone == self.end:
+                    name = f"{drone.destination.name}"
+                    out_put += f"D{drone.id}-{name}\n"
+                elif drone.solved:
                     name = "Delivered"
-                out_put += f"D{drone.id}-{name}\n"
+                    out_put += f"D{drone.id}-{name}\n"
+                else:
+                    name = f"{drone.current_zone.name}"
+                    out_put += f"D{drone.id}-{name}\n"
                 turn.append(info)
             self.turn_moves.append(turn)
             self.out_put.append(out_put)

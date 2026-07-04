@@ -1,6 +1,6 @@
 from .connections import Connections
 from .drone import Drone
-from .zone import Zone, ZoneType
+from .zone import Zone, ZoneType, ZoneColor
 
 __all__ = [
     "Connections",

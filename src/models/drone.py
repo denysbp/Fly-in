@@ -48,6 +48,7 @@ class Drone:
         self.destination = None
         self.moving = False
         self.current_connection.arrive()
+        self.current_connection = None
         self.index += 1
         return True
 

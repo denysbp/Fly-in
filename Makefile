@@ -6,7 +6,7 @@ VISUALIZATION := $(PACKAGE)visualization/
 
 
 run:
-	python3 fly-in.py $(MAP)
+	@python3 fly-in.py $(MAP)
 install_venv:
 	$(PY) -m venv .venv
 
