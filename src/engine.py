@@ -63,10 +63,11 @@ class Engine:
         self.drones: List["Drone"] = generator.drones
         self.connections: List["Connections"] = generator.connections
         self.zones: List["Zone"] = generator.zones
-        self.turn_moves: List["Zone"] = []
+        self.turn_moves: List[List["Drone"]] = []
         self.start: "Zone" = generator.start
         self.end: "Zone" = generator.end
         self.turns: int = 0
+        self.out_put: List[List[str]] = []
 
     def solver_path(self) -> None:
         for drone in self.drones:
@@ -89,6 +90,7 @@ class Engine:
                     drone.deslocate(drone.current_zone, connection)
 
             turn = []
+            out_put: str = ""
             for drone in self.drones:
                 info = [
                     drone.id,
@@ -98,5 +100,13 @@ class Engine:
                     drone.moving,
                     drone.solved
                 ]
+                if not drone.moving:
+                    continue
+                if drone.moving:
+                    name = f"{drone.current_connection.zones[0].name}"
+                elif drone.current_zone == self.end:
+                    name = "Delivered"
+                out_put += f"D{drone.id}-{name}\n"
                 turn.append(info)
             self.turn_moves.append(turn)
+            self.out_put.append(out_put)

@@ -7,18 +7,21 @@ def main() -> None:
         file = sys.argv[1]
         parser = Parser(file)
         parser.parsing()
-        simu = Generator(parser)
-        simu.create_zone()
-        simu.create_drone()
-        simu.create_connections()
-        path = Pathfinder(simu.zones)
-        engine = Engine(simu, path)
+        generator = Generator(parser)
+        generator.create_zone()
+        generator.create_drone()
+        generator.create_connections()
+        path = Pathfinder(generator.zones)
+        engine = Engine(generator, path)
         engine.solver_path()
-        print(engine.turn_moves)
-        print(engine.turns)
+        for c in engine.out_put:
+            print(c, end="")
+        print(f"Total turns: {engine.turns}")
     except ParserError as e:
         print(e)
         sys.exit(1)
+    except KeyboardInterrupt as e:
+        print(e)
 
 
 if __name__ == "__main__":
