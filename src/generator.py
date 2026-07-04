@@ -32,7 +32,7 @@ class Generator:
                 return zone
 
     def create_drone(self) -> None:
-        for i in range(self.parser.nb_drones):
+        for i in range(1, self.parser.nb_drones + 1):
             drone = Drone(self.start, i)
             self.drones.append(drone)
 

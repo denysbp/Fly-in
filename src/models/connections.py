@@ -25,7 +25,7 @@ class Connections:
         returns:
             bool: if the moving is less than max_link_capacity
         """
-        return self.moving <= self.max_link_capacity
+        return self.moving < self.max_link_capacity
 
     def moving_to_connection(self) -> bool:
         if not self.can_go():

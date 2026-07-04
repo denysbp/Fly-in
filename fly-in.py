@@ -1,4 +1,4 @@
-from src import ParserError, Parser, Generator
+from src import ParserError, Parser, Generator, Engine, Pathfinder
 import sys
 
 
@@ -10,12 +10,12 @@ def main() -> None:
         simu = Generator(parser)
         simu.create_zone()
         simu.create_drone()
-        print(simu.start)
-        print(simu.end)
-        print(parser.hubs)
-        print(simu.drones)
         simu.create_connections()
-        print(simu.connections)
+        path = Pathfinder(simu.zones)
+        engine = Engine(simu, path)
+        engine.solver_path()
+        print(engine.turn_moves)
+        print(engine.turns)
     except ParserError as e:
         print(e)
         sys.exit(1)

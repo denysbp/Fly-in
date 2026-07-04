@@ -1,9 +1,12 @@
 PY := python3
 PACKAGE := src/
-
+MAP ?= ./maps/easy/01_linear_path.txt
 MODELS := $(PACKAGE)models/
 VISUALIZATION := $(PACKAGE)visualization/
 
+
+run:
+	python3 fly-in.py $(MAP)
 install_venv:
 	$(PY) -m venv .venv
 

@@ -27,11 +27,8 @@ class Drone:
             bool: True if the operation succed, False if can't move
         """
         destination: Union["Zone" | bool] = connection.cross_connection(zone)
-        if self.current_zone == zone:
-            return False
-        elif destination != zone:
-            return False
         self.current_zone.take_from_zone(self)
+        self.current_zone = None
         self.destination = destination
         self.moving = True
         self.current_connection = connection
@@ -53,3 +50,4 @@ class Drone:
         self.current_connection.arrive()
         self.index += 1
         return True
+
