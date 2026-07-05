@@ -4,7 +4,7 @@ from heapq import heapify, heappop, heappush
 if TYPE_CHECKING:
     from models import Drone, Zone, Connections, ZoneType
     from generator import Generator
-
+import sys
 
 class Pathfinder:
     def __init__(self, zones: List["Zone"]):
@@ -35,6 +35,8 @@ class Pathfinder:
             visited.add(current_zone)
 
             for connection in current_zone.connections:
+                if connection.blocked:
+                    continue
                 neighbor = connection.connection_end(current_zone)
                 if neighbor.type == ZoneType.blocked:
                     continue
@@ -72,11 +74,30 @@ class Engine:
     def solver_path(self) -> None:
         for drone in self.drones:
             drone.path = self.pathfinder.dijkstra(self.start, self.end)
+
+        initial_turn = []
+        initial_out_put: str = ""
+        for drone in self.drones:
+            info = [
+                drone.id,
+                drone.current_zone,
+                drone.destination,
+                drone.current_connection,
+                drone.moving,
+                drone.solved
+            ]
+            initial_out_put += f"D{drone.id}-{drone.current_zone.name}\n"
+            initial_turn.append(info)
+
+        self.turn_moves.append(initial_turn)
+        self.out_put.append(initial_out_put)
+
         while not all(drone.solved for drone in self.drones):
             self.turns += 1
             for drone in self.drones:
                 if drone.moving:
-                    drone.arrived_to_zone()
+                    if drone.destination == self.end or drone.destination.has_space():
+                        drone.arrived_to_zone(is_sink=drone.destination == self.end)
 
             for drone in self.drones:
                 if drone.solved:
@@ -84,9 +105,14 @@ class Engine:
                 if drone.current_zone == self.end:
                     drone.solved = True
                     continue
+                if drone.moving:
+                    continue
+                if not drone.path:
+                    print("There is no solution for the zones")
+                    sys.exit(0)
                 next_zone = drone.path[drone.index + 1]
                 connection = drone.current_zone.find_connection(next_zone)
-                if connection.can_go():
+                if connection.can_go() and next_zone.has_space():
                     drone.deslocate(drone.current_zone, connection)
 
             turn = []

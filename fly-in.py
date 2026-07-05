@@ -25,9 +25,9 @@ def main() -> None:
         sys.exit(1)
     except KeyboardInterrupt as e:
         print(e)
-    except AttributeError as e:
-        print(e)
-        sys.exit(1)
+    # except AttributeError as e:
+    #     print(e)
+    #     sys.exit(1)
 
 
 if __name__ == "__main__":

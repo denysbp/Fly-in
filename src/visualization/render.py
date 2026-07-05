@@ -12,6 +12,14 @@ if TYPE_CHECKING:
 
 pygame.init()
 
+TURN_DURATION_MS = 1000
+ZOOM_STEP = 1.12
+MIN_ZOOM = 0.35
+MAX_ZOOM = 3.0
+DEFAULT_ZOOM = 0.72
+FIT_MARGIN = 360
+FIT_SCALE_FACTOR = 0.78
+
 def generate_drone_image() -> Surface:
     imgs = [
         drone_1,
@@ -87,50 +95,111 @@ class Render:
         self.turn: int = 0
         self.sprites: dict = {}
 
-    def off_set(self, SCALE: int) -> tuple[int, int]:
-        min_x = min(zone.x for zone in self.zones)
-        min_y = min(zone.y for zone in self.zones)
-
-        max_x = max(zone.x for zone in self.zones)
-        max_y = max(zone.y for zone in self.zones)
+    def off_set(self, SCALE: int, viewport_width: int, viewport_height: int) -> tuple[int, int]:
+        min_x, min_y, max_x, max_y = self.map_bounds()
 
         map_width = (max_x - min_x) * SCALE
         map_height = (max_y - min_y) * SCALE
 
-        offset_x = (WIDTH - map_width) // 2
-        offset_y = (HEIGHT - map_height) // 2
+        offset_x = (viewport_width - map_width) // 2
+        offset_y = (viewport_height - map_height) // 2
         return offset_x, offset_y, min_x, min_y
 
-    def update_turn(self, SCALE: int):
-        offset_x, offset_y, min_x, min_y = self.off_set(SCALE)
+    def fit_scale(self, viewport_width: int, viewport_height: int) -> float:
+        min_x, min_y, max_x, max_y = self.map_bounds()
 
-        for drone_info in self.turns_moves[self.turn]:
+        span_x = max(1, max_x - min_x)
+        span_y = max(1, max_y - min_y)
+
+        available_width = max(1, viewport_width - FIT_MARGIN)
+        available_height = max(1, viewport_height - FIT_MARGIN)
+
+        return min(available_width / span_x, available_height / span_y) * FIT_SCALE_FACTOR
+
+    def map_bounds(self) -> tuple[int, int, int, int]:
+        min_x = min(zone.x for zone in self.zones)
+        min_y = min(zone.y for zone in self.zones)
+        max_x = max(zone.x for zone in self.zones)
+        max_y = max(zone.y for zone in self.zones)
+        return min_x, min_y, max_x, max_y
+
+    def zone_screen_position(
+        self,
+        zone: "Zone",
+        SCALE: int,
+        offset_x: int,
+        offset_y: int,
+        min_x: int,
+        min_y: int,
+    ) -> tuple[float, float]:
+        screen_x = offset_x + (zone.x - min_x) * SCALE
+        screen_y = offset_y + (zone.y - min_y) * SCALE
+        return screen_x, screen_y
+
+    def drone_snapshot_position(
+        self,
+        drone_info: List,
+        SCALE: int,
+        offset_x: int,
+        offset_y: int,
+        min_x: int,
+        min_y: int,
+    ) -> tuple[float, float]:
+        if drone_info[4] and drone_info[2] is not None:
+            zone = drone_info[2]
+            return self.zone_screen_position(zone, SCALE, offset_x, offset_y, min_x, min_y)
+
+        zone = drone_info[1]
+        return self.zone_screen_position(zone, SCALE, offset_x, offset_y, min_x, min_y)
+
+    def apply_drone_offset(self, drone_id: int, screen_x: float, screen_y: float) -> tuple[float, float]:
+        screen_x += ((drone_id - 1) % 3) * 14 - 14
+        return screen_x, screen_y
+
+    def lerp(self, start: float, end: float, progress: float) -> float:
+        return start + (end - start) * progress
+
+    def update_turn(self, SCALE: int, viewport_width: int, viewport_height: int, progress: float = 0.0):
+        offset_x, offset_y, min_x, min_y = self.off_set(SCALE, viewport_width, viewport_height)
+        progress = max(0.0, min(1.0, progress))
+
+        current_turn = self.turns_moves[self.turn]
+        if self.turn == 0:
+            previous_turn = current_turn
+        else:
+            previous_turn = self.turns_moves[self.turn - 1]
+
+        previous_turn_by_id = {drone_info[0]: drone_info for drone_info in previous_turn}
+
+        for drone_info in current_turn:
             sprite = self.sprites[drone_info[0]]
+            previous_drone_info = previous_turn_by_id.get(drone_info[0], drone_info)
 
-            if drone_info[4]:      # moving
-                connection = drone_info[3]
+            start_x, start_y = self.drone_snapshot_position(
+                previous_drone_info,
+                SCALE,
+                offset_x,
+                offset_y,
+                min_x,
+                min_y,
+            )
+            end_x, end_y = self.drone_snapshot_position(
+                drone_info,
+                SCALE,
+                offset_x,
+                offset_y,
+                min_x,
+                min_y,
+            )
 
-                zone1 = connection.zones[0]
-                zone2 = connection.zones[1]
-
-                x1 = offset_x + (zone1.x - min_x) * SCALE
-                y1 = offset_y + (zone1.y - min_y) * SCALE
-
-                x2 = offset_x + (zone2.x - min_x) * SCALE
-                y2 = offset_y + (zone2.y - min_y) * SCALE
-
-                screen_x = (x1 + x2) / 2
-                screen_y = (y1 + y2) / 2
-            else:
-                zone = drone_info[1]
-
-                screen_x = offset_x + (zone.x - min_x) * SCALE
-                screen_y = offset_y + (zone.y - min_y) * SCALE
+            screen_x = self.lerp(start_x, end_x, progress)
+            screen_y = self.lerp(start_y, end_y, progress)
 
             drone_id = drone_info[0]
-
-            screen_x += ((drone_id - 1) % 3) * 18 - 18
-            screen_y += ((drone_id - 1) // 3) * 18 - 9
+            screen_x, screen_y = self.apply_drone_offset(drone_id, screen_x, screen_y)
+            if drone_info[5]:
+                screen_x = viewport_width + 100
+                screen_y = viewport_height + 100
 
             sprite.update(
                 drone_info[0],
@@ -139,8 +208,8 @@ class Render:
                 drone_info[3],
                 drone_info[4],
                 drone_info[5],
-                screen_x,
-                screen_y
+                round(screen_x),
+                round(screen_y + 10)
             )
 
     def run(self) -> None:
@@ -158,11 +227,14 @@ class Render:
             self.sprites[drone.id] = drone_sprite
             sprites.add(drone_sprite)
         clock = pygame.time.Clock()
-        SCALE = 150
+        viewport_width, viewport_height = screen.get_size()
+        base_scale = self.fit_scale(viewport_width, viewport_height)
+        zoom = DEFAULT_ZOOM
+        fullscreen = False
         running = True
         turn_timer = 0
         if self.turns_moves:
-            self.update_turn(SCALE)
+            self.update_turn(base_scale * zoom, viewport_width, viewport_height, 0.0)
         while running:
             dt = clock.tick(FPS)
             turn_timer += dt
@@ -170,24 +242,50 @@ class Render:
                 if event.type == pygame.QUIT:
                     running = False
 
+                if event.type == pygame.VIDEORESIZE and not fullscreen:
+                    screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                    viewport_width, viewport_height = screen.get_size()
+                    base_scale = self.fit_scale(viewport_width, viewport_height)
+
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_f:
-                        pygame.display.toggle_fullscreen()
+                        fullscreen = not fullscreen
+                        if fullscreen:
+                            screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                        else:
+                            screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
+                        viewport_width, viewport_height = screen.get_size()
+                        base_scale = self.fit_scale(viewport_width, viewport_height)
+                    elif event.key in (pygame.K_PLUS, pygame.K_EQUALS, pygame.K_KP_PLUS):
+                        zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
+                    elif event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
+                        zoom = min(MAX_ZOOM, zoom * ZOOM_STEP)
+
+                if event.type == pygame.MOUSEWHEEL:
+                    if event.y > 0:
+                        zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
+                    elif event.y < 0:
+                        zoom = min(MAX_ZOOM, zoom * ZOOM_STEP)
 
 
             screen.fill((0, 0, 0))
 
-            if turn_timer >= 1000:
-                turn_timer = 0
+            viewport_width, viewport_height = screen.get_size()
+            base_scale = self.fit_scale(viewport_width, viewport_height)
+            SCALE = base_scale * zoom
 
-                if self.turn < len(self.turns_moves) - 1:
+            if self.turns_moves:
+                while turn_timer >= TURN_DURATION_MS and self.turn < len(self.turns_moves) - 1:
+                    turn_timer -= TURN_DURATION_MS
                     self.turn += 1
-                    self.update_turn(SCALE)
+
+                progress = turn_timer / TURN_DURATION_MS
+                self.update_turn(SCALE, viewport_width, viewport_height, progress)
 
             for connection in self.connections:
                 zone1 = connection.zones[0]
                 zone2 = connection.zones[1]
-                offset_x, offset_y, min_x, min_y = self.off_set(SCALE)
+                offset_x, offset_y, min_x, min_y = self.off_set(SCALE, viewport_width, viewport_height)
                 x1 = offset_x + (zone1.x - min_x) * SCALE
                 y1 = offset_y + (zone1.y - min_y) * SCALE
 
@@ -201,7 +299,7 @@ class Render:
                     5
                 )
             for zone in self.zones:
-                offset_x, offset_y, min_x, min_y = self.off_set(SCALE)
+                offset_x, offset_y, min_x, min_y = self.off_set(SCALE, viewport_width, viewport_height)
                 screen_x = offset_x + (zone.x - min_x) * SCALE
                 screen_y = offset_y + (zone.y - min_y) * SCALE
                 pygame.draw.circle(

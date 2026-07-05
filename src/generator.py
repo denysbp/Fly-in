@@ -17,11 +17,15 @@ class Generator:
         for connect in self.parser.connections:
             zone_1 = self.find_target(connect[0])
             zone_2 = self.find_target(connect[1])
-            if len(connect) == 2:
-                max_link = 1
-            else:
-                max_link = connect[2][0][1]
-            connection = Connections(zone_1, zone_2, max_link)
+            max_link = 1
+            blocked = False
+            if len(connect) == 3:
+                for key, value in connect[2]:
+                    if key == "max_link_capacity":
+                        max_link = value
+                    elif key == "zone" and value == "blocked":
+                        blocked = True
+            connection = Connections(zone_1, zone_2, max_link, blocked)
             zone_2.connections.append(connection)
             zone_1.connections.append(connection)
             self.connections.append(connection)
@@ -34,6 +38,7 @@ class Generator:
     def create_drone(self) -> None:
         for i in range(1, self.parser.nb_drones + 1):
             drone = Drone(self.start, i)
+            drone.current_zone.move_to_zone(drone)
             self.drones.append(drone)
 
     def create_zone(self) -> None:

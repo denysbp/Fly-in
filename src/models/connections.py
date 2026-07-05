@@ -13,9 +13,11 @@ class Connections:
         zone_1: "Zone",
         zone_2: "Zone",
         max_link_capacity: int = 1,
+        blocked: bool = False,
     ):
         self.zones: tuple["Zone", "Zone"] = (zone_1, zone_2)
         self.max_link_capacity: int = max_link_capacity
+        self.blocked: bool = blocked
         self.moving: int = 0
 
     def can_go(self) -> bool:
@@ -25,6 +27,8 @@ class Connections:
         returns:
             bool: if the moving is less than max_link_capacity
         """
+        if self.blocked:
+            return False
         return self.moving < self.max_link_capacity
 
     def moving_to_connection(self) -> bool:

@@ -115,12 +115,11 @@ class Zone:
         """
         if drone in self.current_drones:
             return False
-        elif self.occupation <= self.max_capacity:
-            self.occupation += 1
-            self.current_drones.append(drone)
-            return True
-        else:
+        if self.occupation >= self.max_capacity:
             return False
+        self.current_drones.append(drone)
+        self.occupation += 1
+        return True
 
     def take_from_zone(self, drone: "Drone") -> bool:
         """
@@ -131,6 +130,7 @@ class Zone:
        """
         if drone not in self.current_drones:
             return False
+
         self.occupation -= 1
         self.current_drones.remove(drone)
         return True
@@ -139,3 +139,6 @@ class Zone:
         for connection in self.connections:
             if zone in connection.zones:
                 return connection
+
+    def has_space(self) -> bool:
+        return self.occupation < self.max_capacity

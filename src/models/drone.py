@@ -34,7 +34,7 @@ class Drone:
         self.current_connection = connection
         return True
 
-    def arrived_to_zone(self) -> bool:
+    def arrived_to_zone(self, is_sink: bool = False) -> bool:
         """
         This function add the moved zone from connection in to zone
 
@@ -44,10 +44,13 @@ class Drone:
         if not self.moving:
             return False
         self.current_zone = self.destination
-        self.current_zone.move_to_zone(self)
+        if self.current_connection is not None:
+            self.current_connection.arrive()
+        if not is_sink:
+            if not self.current_zone.move_to_zone(self):
+                return False
         self.destination = None
         self.moving = False
-        self.current_connection.arrive()
         self.current_connection = None
         self.index += 1
         return True

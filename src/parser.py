@@ -27,6 +27,7 @@ class Parser:
             "zone": 0,
             "color": 1,
             "max_drones": 2,
+            "max_link_capacity": 3,
         }
         for c in brackets:
             if " " in c:
@@ -315,6 +316,11 @@ class Parser:
                         connections, brackets = value.split(" ", 1)
                         zone_1, zone_2 = connections.split("-", 1)
                         temp = self.parse_brackets(brackets, nb_line)
+                        for item_key, _ in temp:
+                            if item_key != "max_link_capacity":
+                                raise ParserError(
+                                    f'Invalid config type "{item_key}" for connection line:{nb_line}'
+                                )
                         if zone_1 not in self.hubs_names:
                             raise ParserError(
                                 f"The zone: {zone_1} don't exist"
