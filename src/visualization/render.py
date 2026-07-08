@@ -4,21 +4,15 @@ from typing import TYPE_CHECKING, List, Union
 from random import choice
 from .settings import img_dir, FPS, HEIGHT, WIDTH, Color, \
     drone_1, drone_2, drone_3, drone_4, rainbow, plataform_1, \
-    plataform_2, plataform_3, plataform_4, plataform_5, plataform_6
+    plataform_2, plataform_3, plataform_4, plataform_5, plataform_6, back_ground, \
+    TURN_DURATION_MS, ZOOM_STEP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, FIT_MARGIN, \
+    FIT_SCALE_FACTOR
 
 if TYPE_CHECKING:
     from ..engine import Engine
     from ..models import Drone, Connections, Zone, ZoneType, ZoneColor
 
 pygame.init()
-
-TURN_DURATION_MS = 1000
-ZOOM_STEP = 1.12
-MIN_ZOOM = 0.35
-MAX_ZOOM = 3.0
-DEFAULT_ZOOM = 0.72
-FIT_MARGIN = 360
-FIT_SCALE_FACTOR = 0.78
 
 def generate_drone_image() -> Surface:
     imgs = [
@@ -94,6 +88,7 @@ class Render:
         self.out_put: List[str] = out_put
         self.turn: int = 0
         self.sprites: dict = {}
+        self.color = Color()
 
     def off_set(self, SCALE: int, viewport_width: int, viewport_height: int) -> tuple[int, int]:
         min_x, min_y, max_x, max_y = self.map_bounds()
@@ -212,6 +207,14 @@ class Render:
                 round(screen_y + 10)
             )
 
+    def draw_text(self, surface, size, x, y, text):
+        font_name = pygame.font.match_font("arial")
+        font = pygame.font.Font(font_name, size)
+        text_surface =  font.render(text, True, self.color.WHITE)
+        text_rect = text_surface.get_rect()
+        text_rect.midtop = (x, y)
+        surface.blit(text_surface, text_rect)
+
     def run(self) -> None:
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
         sprites = pygame.sprite.Group()
@@ -233,6 +236,8 @@ class Render:
         fullscreen = False
         running = True
         turn_timer = 0
+        img_back_ground = pygame.image.load(back_ground).convert()
+        back_rect = img_back_ground.get_rect()
         if self.turns_moves:
             self.update_turn(base_scale * zoom, viewport_width, viewport_height, 0.0)
         while running:
@@ -244,6 +249,9 @@ class Render:
 
                 if event.type == pygame.VIDEORESIZE and not fullscreen:
                     screen = pygame.display.set_mode((event.w, event.h), pygame.RESIZABLE)
+                    size = pygame.display.get_window_size()
+                    img_back_ground =  pygame.transform.scale(img_back_ground, size)
+                    back_rect = img_back_ground.get_rect()
                     viewport_width, viewport_height = screen.get_size()
                     base_scale = self.fit_scale(viewport_width, viewport_height)
 
@@ -252,6 +260,9 @@ class Render:
                         fullscreen = not fullscreen
                         if fullscreen:
                             screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+                            size = pygame.display.get_window_size()
+                            img_back_ground =  pygame.transform.scale(img_back_ground, size)
+                            back_rect = img_back_ground.get_rect()
                         else:
                             screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
                         viewport_width, viewport_height = screen.get_size()
@@ -260,6 +271,8 @@ class Render:
                         zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
                     elif event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
                         zoom = min(MAX_ZOOM, zoom * ZOOM_STEP)
+                    elif event.key == pygame.K_ESCAPE:
+                        running = False
 
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0:
@@ -269,6 +282,7 @@ class Render:
 
 
             screen.fill((0, 0, 0))
+            screen.blit(img_back_ground, back_rect)
 
             viewport_width, viewport_height = screen.get_size()
             base_scale = self.fit_scale(viewport_width, viewport_height)
@@ -308,6 +322,7 @@ class Render:
                     (screen_x, screen_y),
                     40
                 )
+                self.draw_text(screen, 15, screen_x, screen_y - 60, zone.name)
 
             sprites.draw(screen)
             pygame.display.flip()

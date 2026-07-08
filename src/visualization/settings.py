@@ -3,6 +3,7 @@ from os import path
 
 class Color:
     def __init__(self):
+        self.WHITE = (255, 255, 255)
         self.RED = (235, 64, 52)
         self.BLUE = (15, 73, 219)
         self.BLACK = (0, 0, 0)
@@ -20,6 +21,14 @@ class Color:
 WIDTH = 1260
 HEIGHT = 1840
 FPS = 60
+TURN_DURATION_MS = 1000
+ZOOM_STEP = 1.12
+MIN_ZOOM = 0.35
+MAX_ZOOM = 3.0
+DEFAULT_ZOOM = 0.72
+FIT_MARGIN = 360
+FIT_SCALE_FACTOR = 0.78
+
 
 img_dir = path.join(path.dirname(__file__), 'img')
 drone_1 = path.join(img_dir, "drone1.jpeg")
@@ -33,3 +42,4 @@ plataform_3 = path.join(img_dir, "P03.png")
 plataform_4 = path.join(img_dir, "P04.png")
 plataform_5 = path.join(img_dir, "P05.png")
 plataform_6 = path.join(img_dir, "P06.png")
+back_ground = path.join(img_dir, "background.jpg")
