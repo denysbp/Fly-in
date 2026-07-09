@@ -121,6 +121,8 @@ class Engine:
                 if drone.moving:
                     if drone.destination == self.end or drone.destination.has_space():
                         drone.arrived_to_zone(is_sink=drone.destination == self.end)
+                        if drone.destination == None and drone.current_zone.type.value == ZoneType.restricted.value:
+                            self.turns += 1
 
             for drone in self.drones:
                 if drone.solved:

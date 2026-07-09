@@ -218,10 +218,12 @@ class Render:
     def show_stats(self, surface: Surface):
         x, y = pygame.display.get_window_size()
         pygame.draw.rect(surface, self.color.BLACK, [0, 1800,x ,y])
-        self.draw_text(surface, 40, (x // 5.5) - 550,( y // 2) + 800, f"Total turns: {self.turn}")
-        self.draw_text(surface, 40, (x // 5.5) - 550,( y // 2) + 900, "+ for zoom plus")
-        self.draw_text(surface, 40, (x // 5.5) - 550,( y // 2) + 960, "- for zoom less")
-        self.draw_text(surface, 40, (x // 5.5) - 200,( y // 2) + 900, "ESQ for quit")
+        self.draw_text(surface, 40, (x // 5.5) - 550, (y // 2) + 800, f"Total turns: {self.turn}")
+        self.draw_text(surface, 40, (x // 5.5) - 550, (y // 2) + 900, "+ for zoom plus")
+        self.draw_text(surface, 40, (x // 5.5) - 550, (y // 2) + 960, "- for zoom less")
+        self.draw_text(surface, 40, (x // 5.5) - 200, (y // 2) + 900, "ESQ for quit")
+        self.draw_text(surface, 40, (x // 5.5) - 200, (y // 2) + 960, "F for full-screen")
+        self.draw_text(surface, 40, (x // 5.5) + 150, (y // 2) + 960, "E for zones names")
 
     def run(self) -> None:
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
