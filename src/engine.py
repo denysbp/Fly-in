@@ -58,6 +58,28 @@ class Pathfinder:
         path.reverse()
         return path
 
+class Color:
+    """
+    Class for Color
+    """
+    def __init__(self) -> None:
+        self.deacivated = '\033[0m'
+        self.black = '\033[30m'
+        self.red = '\033[31m'
+        self.green = '\033[32m'
+        self.orange = '\033[33m'
+        self.blue = '\033[34m'
+        self.purple = '\033[35m'
+        self.cyan = '\033[36m'
+        self.lightgrey = '\033[37m'
+        self.darkgrey = '\033[90m'
+        self.lightred = '\033[91m'
+        self.lightgreen = '\033[92m'
+        self.yellow = '\033[93m'
+        self.lightblue = '\033[94m'
+        self.pink = '\033[95m'
+        self.lightcyan = '\033[96m'
+        self.end = '\033[m'
 
 class Engine:
     def __init__(self, generator: "Generator", path_finder: "Pathfinder"):
@@ -70,6 +92,7 @@ class Engine:
         self.end: "Zone" = generator.end
         self.turns: int = 0
         self.out_put: List[str] = []
+        self.color: Color = Color()
 
     def solver_path(self) -> None:
         for drone in self.drones:
@@ -128,10 +151,10 @@ class Engine:
                 ]
                 if drone.moving:
                     name = f"{drone.destination.name}"
-                    out_put += f"D{drone.id}-{name}\n"
+                    out_put += f"{self.color.red}D{drone.id}-{name}\n{self.color.end}"
                 elif drone.solved:
                     name = "Delivered"
-                    out_put += f"D{drone.id}-{name}\n"
+                    out_put += f"{self.color.green}D{drone.id}-{name}\n{self.color.end}"
                 else:
                     name = f"{drone.current_zone.name}"
                     out_put += f"D{drone.id}-{name}\n"

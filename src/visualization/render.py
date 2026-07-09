@@ -79,7 +79,7 @@ class Render:
         drones: "Drone",
         connections: List["Connections"],
         turns_moves: List[List],
-        out_put: List[str]
+        out_put: List[str],
     ):
         self.zones: List["Zone"] = zones
         self.drones: List["Drone"]= drones
@@ -207,13 +207,21 @@ class Render:
                 round(screen_y + 10)
             )
 
-    def draw_text(self, surface, size, x, y, text):
+    def draw_text(self, surface: Surface, size, x, y, text):
         font_name = pygame.font.match_font("arial")
         font = pygame.font.Font(font_name, size)
         text_surface =  font.render(text, True, self.color.WHITE)
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x, y)
         surface.blit(text_surface, text_rect)
+
+    def show_stats(self, surface: Surface):
+        x, y = pygame.display.get_window_size()
+        pygame.draw.rect(surface, self.color.BLACK, [0, 1800,x ,y])
+        self.draw_text(surface, 40, (x // 5.5) - 550,( y // 2) + 800, f"Total turns: {self.turn}")
+        self.draw_text(surface, 40, (x // 5.5) - 550,( y // 2) + 900, "+ for zoom plus")
+        self.draw_text(surface, 40, (x // 5.5) - 550,( y // 2) + 960, "- for zoom less")
+        self.draw_text(surface, 40, (x // 5.5) - 200,( y // 2) + 900, "ESQ for quit")
 
     def run(self) -> None:
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
@@ -237,7 +245,11 @@ class Render:
         running = True
         turn_timer = 0
         img_back_ground = pygame.image.load(back_ground).convert()
+        size = pygame.display.get_window_size()
+        img_back_ground =  pygame.transform.scale(img_back_ground, size)
         back_rect = img_back_ground.get_rect()
+        show_zones = False
+        show_stats = False
         if self.turns_moves:
             self.update_turn(base_scale * zoom, viewport_width, viewport_height, 0.0)
         while running:
@@ -273,7 +285,16 @@ class Render:
                         zoom = min(MAX_ZOOM, zoom * ZOOM_STEP)
                     elif event.key == pygame.K_ESCAPE:
                         running = False
-
+                    elif event.key == pygame.K_e:
+                        if not show_zones:
+                            show_zones = True
+                        else:
+                            show_zones = False
+                    elif event.key ==  pygame.K_q:
+                        if not show_stats:
+                            show_stats = True
+                        else:
+                            show_stats = False
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0:
                         zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
@@ -322,8 +343,10 @@ class Render:
                     (screen_x, screen_y),
                     40
                 )
-                self.draw_text(screen, 15, screen_x, screen_y - 60, zone.name)
-
+                if show_zones:
+                    self.draw_text(screen, 15, screen_x, screen_y - 60, zone.name)
+            if show_stats:
+                self.show_stats(screen)
             sprites.draw(screen)
             pygame.display.flip()
 

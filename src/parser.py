@@ -347,6 +347,7 @@ class Parser:
             None
         """
         try:
+            SKIPPED_LINES = 0
             with open(self.map) as f:
                 lines = f.readlines()
                 if not lines:

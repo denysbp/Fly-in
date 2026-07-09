@@ -14,7 +14,7 @@ def main() -> None:
         path = Pathfinder(generator.zones)
         engine = Engine(generator, path)
         engine.solver_path()
-        print(engine.turn_moves)
+        # print(engine.turn_moves)
         for c in engine.out_put:
             print(c, end="")
         print(f"Total turns: {engine.turns}")
