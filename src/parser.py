@@ -13,7 +13,7 @@ class Parser:
     """
     def __init__(self, map: str) -> None:
         self.map: str = map
-        self.nb_drones: int = 0
+        self.nb_drones: int = -1
         self.hubs: dict[str, dict] = {}
         self.connections: list[tuple[str, str, Union[int | None]]] = []
         self.hubs_names: List[str] = []
@@ -361,25 +361,31 @@ class Parser:
                     if not line:
                         continue
                     self.parse_line(line, nb_line)
+                    if self.nb_drones < 0 and (len(self.hubs) > 0 or len(self.connections) > 0):
+                        raise ParserError(
+                            f"Erro The first line must be the numbers off drones line:{nb_line}"
+                        )
 
         except ParserError as e:
             print(e)
-            sys.exit(1)
+            sys.exit(0)
         except TypeError as e:
             print(e)
-            sys.exit(1)
+            sys.exit(0)
         except PermissionError as e:
             print(e)
-            sys.exit(1)
+            sys.exit(0)
         except FileNotFoundError as e:
             print(e)
-            sys.exit(1)
+            sys.exit(0)
         except IsADirectoryError as e:
             print(e)
-            sys.exit(1)
+            sys.exit(0)
 
 
 if __name__ == "__main__":
+    if len(sys.argv) > 2:
+        print(f"Rejecting: {sys.argv[2:]}")
     file = sys.argv[1]
     parser = Parser(file)
     parser.parsing()

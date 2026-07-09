@@ -1,3 +1,6 @@
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+
 import pygame
 from pygame import Surface, Rect
 from typing import TYPE_CHECKING, List, Union
@@ -13,7 +16,6 @@ if TYPE_CHECKING:
     from ..models import Drone, Connections, Zone, ZoneType, ZoneColor
 
 pygame.init()
-
 def generate_drone_image() -> Surface:
     imgs = [
         drone_1,
