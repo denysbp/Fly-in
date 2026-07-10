@@ -271,7 +271,7 @@ class Parser:
                             raise ParserError(
                                 f"This connection {erro} was already defined line:{nb_line}"
                             )
-                        elif (zone_2, zone_1) in self.invalid_connections:
+                        elif (zone_1, zone_2) in self.invalid_connections:
                             raise ParserError(
                                 f"Invalid connections detected line:{nb_line}"
                             )
@@ -403,7 +403,7 @@ class Parser:
                             raise ParserError(
                                 f"This connection {erro} was already defined line:{nb_line}"
                             )
-                        elif (zone_2, zone_1) in self.invalid_connections:
+                        elif (zone_1, zone_2) in self.invalid_connections:
                             raise ParserError(
                                 f"Invalid connections detected line:{nb_line}"
                             )

@@ -99,7 +99,6 @@ connection: gate_hell4-gate_hell5 [max_link_capacity=1]
 
 # Layer 1 connections (maze of despair)
 connection: gate_hell1-maze_trap_a1
-connection: maze_trap_a1-gate_hell1
 connection: gate_hell2-maze_trap_b1
 connection: gate_hell3-maze_loop1
 

@@ -26,12 +26,6 @@ def generate_drone_image() -> Surface:
     image = pygame.image.load(choice(imgs)).convert()
     return image
 
-def generate_zone_image(
-    surface: Surface,
-    color: "ZoneColor"
-) -> Surface:
-    image = pygame.draw.circle(surface, color)
-    return image
 
 class DroneSprite(pygame.sprite.Sprite):
     def __init__(
