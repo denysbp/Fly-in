@@ -15,7 +15,8 @@ hub: gate_hell3 4 0 [color=red max_drones=1]
 hub: gate_hell4 5 0 [color=red max_drones=1]
 hub: gate_hell5 6 0 [color=red max_drones=1]
 
-# === LAYER 1: The Maze of Despair ===
+#=== LAYER 1: The Maze of Despair ===
+
 # Multiple interconnected dead ends and loops
 hub: maze_trap_a1 2 1 [color=purple]
 hub: maze_trap_a2 3 1 [color=purple]
@@ -98,6 +99,7 @@ connection: gate_hell4-gate_hell5 [max_link_capacity=1]
 
 # Layer 1 connections (maze of despair)
 connection: gate_hell1-maze_trap_a1
+connection: maze_trap_a1-gate_hell1
 connection: gate_hell2-maze_trap_b1
 connection: gate_hell3-maze_loop1
 
