@@ -41,6 +41,8 @@ class Pathfinder:
                 if neighbor.type == ZoneType.blocked:
                     continue
                 weight = neighbor.zone_cost()
+                if not neighbor.has_space():
+                    weight += 1000
                 #  Calculate the distance from current_zone to the neighbor
                 tentative_distance = current_distance + weight
                 if tentative_distance < distances[neighbor]:
@@ -119,8 +121,11 @@ class Engine:
             self.turns += 1
             for drone in self.drones:
                 if drone.moving:
-                    if drone.destination == self.end or drone.destination.has_space():
-                        drone.arrived_to_zone(is_sink=drone.destination == self.end)
+                        if drone.stop > 0:
+                            drone.stop -= 1
+
+                        elif drone.destination == self.end or drone.destination.has_space():
+                            drone.arrived_to_zone(is_sink=drone.destination == self.end)
 
             for drone in self.drones:
                 if drone.solved:
@@ -135,6 +140,13 @@ class Engine:
                     sys.exit(0)
                 next_zone = drone.path[drone.index + 1]
                 connection = drone.current_zone.find_connection(next_zone)
+                if not next_zone.has_space():
+                    new_path = self.pathfinder.dijkstra(drone.current_zone, self.end)
+                    if new_path:
+                        drone.path = new_path
+                        drone.index = 0
+                        next_zone = drone.path[drone.index + 1]
+                        connection = drone.current_zone.find_connection(next_zone)
                 if connection.can_go() and next_zone.has_space():
                     drone.deslocate(drone.current_zone, connection)
 

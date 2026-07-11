@@ -1,4 +1,5 @@
 from typing import TYPE_CHECKING, Union
+from .zone import ZoneType
 
 if TYPE_CHECKING:
     from .zone import Zone
@@ -18,6 +19,7 @@ class Drone:
         self.solved: bool = False
         self.index: int = 0
         self.path: list["Zone"]
+        self.stop: int = 0
 
     def deslocate(self, zone: "Zone", connection: "Connections") -> bool:
         """
@@ -30,6 +32,8 @@ class Drone:
         self.current_zone.take_from_zone(self)
         self.current_zone = None
         self.destination = destination
+        if self.destination.type == ZoneType.restricted:
+            self.stop = 1
         self.moving = True
         self.current_connection = connection
         return True

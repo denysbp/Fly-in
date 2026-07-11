@@ -123,6 +123,9 @@ class Render:
         min_x: int,
         min_y: int,
     ) -> tuple[float, float]:
+        """
+        world coordinates -> screen coordinates
+        """
         screen_x = offset_x + (zone.x - min_x) * SCALE
         screen_y = offset_y + (zone.y - min_y) * SCALE
         return screen_x, screen_y
@@ -136,6 +139,9 @@ class Render:
         min_x: int,
         min_y: int,
     ) -> tuple[float, float]:
+        """
+        Where should I draw this drone this turn?
+        """
         if drone_info[4] and drone_info[2] is not None:
             zone = drone_info[2]
             return self.zone_screen_position(zone, SCALE, offset_x, offset_y, min_x, min_y)
@@ -144,10 +150,16 @@ class Render:
         return self.zone_screen_position(zone, SCALE, offset_x, offset_y, min_x, min_y)
 
     def apply_drone_offset(self, drone_id: int, screen_x: float, screen_y: float) -> tuple[float, float]:
+        """
+        Drones hovering over others
+        """
         screen_x += ((drone_id - 1) % 3) * 14 - 14
         return screen_x, screen_y
 
     def lerp(self, start: float, end: float, progress: float) -> float:
+        """
+        Linear Interpolation
+        """
         return start + (end - start) * progress
 
     def update_turn(self, SCALE: int, viewport_width: int, viewport_height: int, progress: float = 0.0):
