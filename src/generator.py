@@ -39,6 +39,7 @@ class Generator:
         for i in range(1, self.parser.nb_drones + 1):
             drone = Drone(self.start, i)
             drone.current_zone.move_to_zone(drone)
+            self.start.occupation += 1
             self.drones.append(drone)
 
     def create_zone(self) -> None:
@@ -59,6 +60,7 @@ class Generator:
                 continue
             elif "start_hub" in key:
                 self.start = self.zone_control(name, x, y, config)
+                self.start.max_capacity = max(self.start.max_capacity, self.parser.nb_drones)
                 self.zones.append(self.start)
                 continue
             self.zones.append(self.zone_control(name, x, y, config))

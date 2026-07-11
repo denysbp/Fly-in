@@ -88,7 +88,7 @@ class Parser:
                     raise ParserError(
                         f"We cann't handle the color '{value}' line:{nb_line}"
                     )
-                return (key, value.strip().upper())
+                return (key, value)
 
             elif "max_drones" in key:
                 if not value.isdigit():

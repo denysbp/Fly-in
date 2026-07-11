@@ -121,11 +121,11 @@ class Engine:
             self.turns += 1
             for drone in self.drones:
                 if drone.moving:
-                        if drone.stop > 0:
-                            drone.stop -= 1
+                    if drone.stop > 0:
+                        drone.stop -= 1
 
-                        elif drone.destination == self.end or drone.destination.has_space():
-                            drone.arrived_to_zone(is_sink=drone.destination == self.end)
+                    elif drone.destination == self.end or drone.destination.has_space():
+                        drone.arrived_to_zone(is_sink=drone.destination == self.end)
 
             for drone in self.drones:
                 if drone.solved:
@@ -163,13 +163,10 @@ class Engine:
                 ]
                 if drone.moving:
                     name = f"{drone.destination.name}"
-                    out_put += f"{self.color.red}D{drone.id}-{name}\n{self.color.end}"
+                    out_put += f"{self.color.red}D{drone.id}-{name}{self.color.end} "
                 elif drone.solved:
                     name = "Delivered"
-                    out_put += f"{self.color.green}D{drone.id}-{name}\n{self.color.end}"
-                else:
-                    name = f"{drone.current_zone.name}"
-                    out_put += f"D{drone.id}-{name}\n"
+                    out_put += f"{self.color.green}D{drone.id}-{name}{self.color.end} "
                 turn.append(info)
             self.turn_moves.append(turn)
             self.out_put.append(out_put)

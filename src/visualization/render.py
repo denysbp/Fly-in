@@ -1,15 +1,17 @@
 from os import environ
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
-
+from random import randint
 import pygame
 from pygame import Surface, Rect
 from typing import TYPE_CHECKING, List, Union
 from random import choice
+from ..models import ZoneColor
 from .settings import img_dir, FPS, HEIGHT, WIDTH, Color, \
-    drone_1, drone_2, drone_3, drone_4, rainbow, plataform_1, \
+    drone_1, drone_2, drone_3, drone_4, rainbow_img, plataform_1, \
     plataform_2, plataform_3, plataform_4, plataform_5, plataform_6, back_ground, \
     TURN_DURATION_MS, ZOOM_STEP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, FIT_MARGIN, \
     FIT_SCALE_FACTOR
+
 
 if TYPE_CHECKING:
     from ..engine import Engine
@@ -76,6 +78,7 @@ class Render:
         connections: List["Connections"],
         turns_moves: List[List],
         out_put: List[str],
+        end
     ):
         self.zones: List["Zone"] = zones
         self.drones: List["Drone"]= drones
@@ -85,6 +88,7 @@ class Render:
         self.turn: int = 0
         self.sprites: dict = {}
         self.color = Color()
+        self.end: "Zone" = end
 
     def off_set(self, SCALE: int, viewport_width: int, viewport_height: int) -> tuple[int, int]:
         min_x, min_y, max_x, max_y = self.map_bounds()
@@ -223,15 +227,73 @@ class Render:
         text_rect.midtop = (x, y)
         surface.blit(text_surface, text_rect)
 
-    def show_stats(self, surface: Surface):
-        x, y = pygame.display.get_window_size()
-        pygame.draw.rect(surface, self.color.BLACK, [0, 1800,x ,y])
-        self.draw_text(surface, 40, (x // 5.5) - 550, (y // 2) + 800, f"Total turns: {self.turn}")
-        self.draw_text(surface, 40, (x // 5.5) - 550, (y // 2) + 900, "+ for zoom plus")
-        self.draw_text(surface, 40, (x // 5.5) - 550, (y // 2) + 960, "- for zoom less")
-        self.draw_text(surface, 40, (x // 5.5) - 200, (y // 2) + 900, "ESQ for quit")
-        self.draw_text(surface, 40, (x // 5.5) - 200, (y // 2) + 960, "F for full-screen")
-        self.draw_text(surface, 40, (x // 5.5) + 150, (y // 2) + 960, "E for zones names")
+    def show_stats(self, surface: Surface, pause: bool):
+        width, height = pygame.display.get_window_size()
+
+        panel_height = int(height * 0.2)
+        panel_y = height - panel_height
+
+        panel = pygame.Surface((width, panel_height), pygame.SRCALPHA)
+        pygame.draw.rect(panel, (10, 10, 14, 215), panel.get_rect(), border_radius=20)
+        pygame.draw.rect(panel, (255, 255, 255, 26), panel.get_rect(), width=2, border_radius=20)
+        pygame.draw.line(panel, (255, 255, 255, 35), (24, 18), (width - 24, 18), 2)
+        surface.blit(panel, (0, panel_y))
+
+        font_size = max(18, height // 45)
+        title_size = font_size + 8
+        small_size = max(16, font_size - 4)
+
+        padding_x = int(width * 0.04)
+        line_spacing = font_size + 19
+
+        x1 = padding_x
+        x2 = int(width * 0.15)
+        x3 = int(width * 0.28)
+
+        y = panel_y + 18
+
+        title_font = pygame.font.SysFont("arial", title_size, bold=True)
+        body_font = pygame.font.SysFont("arial", small_size)
+
+        title_text = title_font.render("Simulation stats", True, self.color.WHITE)
+        surface.blit(title_text, (x1, y))
+
+        turns_label = body_font.render("Total turns:", True, (102, 102, 102))
+        turns_value = title_font.render(str(self.turn), True, self.color.GOLD)
+        badge_x = x1
+        badge_y = y + line_spacing + 2
+        badge_w = max(190, turns_label.get_width() + turns_value.get_width() + 42)
+        badge_h = title_size + 18
+        badge = pygame.Rect(badge_x, badge_y, badge_w, badge_h)
+        pygame.draw.rect(surface, (255, 255, 255, 18), badge, border_radius=16)
+        pygame.draw.rect(surface, (90, 90, 110), badge, width=1, border_radius=16)
+        surface.blit(turns_label, (badge.x + 18, badge.y + 11))
+        surface.blit(turns_value, (badge.right - turns_value.get_width() - 18, badge.y + 7))
+
+        def draw_shortcut(x, base_y, key_text, description, pause: bool = False):
+            if key_text == "SPACE" and pause:
+                key_color = self.color.GREEN
+            elif key_text == "SPACE" and not pause:
+                key_color = self.color.RED
+            else:
+                key_color = self.color.GOLD
+            key_surface = body_font.render(key_text, True, key_color)
+            desc_surface = body_font.render(description, True, self.color.WHITE)
+            key_box = pygame.Rect(x, base_y, key_surface.get_width() + 24, small_size + 18)
+            pygame.draw.rect(surface, (255, 255, 255, 14), key_box, border_radius=12)
+            pygame.draw.rect(surface, (255, 255, 255, 28), key_box, width=1, border_radius=12)
+            surface.blit(key_surface, (key_box.x + 12, key_box.y + 8))
+            surface.blit(desc_surface, (key_box.right + 12, key_box.y + 8))
+
+        row_y = badge.bottom + 14
+        draw_shortcut(x1, row_y, "+", "Zoom in")
+        draw_shortcut(x1, row_y + line_spacing, "-", "Zoom out")
+
+        draw_shortcut(x2, row_y, "ESC", "Quit")
+        draw_shortcut(x2, row_y + line_spacing, "F", "Fullscreen")
+
+        draw_shortcut(x3, row_y, "E", "Toggle zone names")
+        draw_shortcut(x3, row_y + line_spacing, "SPACE", "Pause", pause)
 
     def run(self) -> None:
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
@@ -260,11 +322,13 @@ class Render:
         back_rect = img_back_ground.get_rect()
         show_zones = False
         show_stats = False
+        PAUSE = False
         if self.turns_moves:
             self.update_turn(base_scale * zoom, viewport_width, viewport_height, 0.0)
         while running:
             dt = clock.tick(FPS)
-            turn_timer += dt
+            if not PAUSE:
+                turn_timer += dt
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
@@ -289,10 +353,10 @@ class Render:
                             screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
                         viewport_width, viewport_height = screen.get_size()
                         base_scale = self.fit_scale(viewport_width, viewport_height)
-                    elif event.key in (pygame.K_PLUS, pygame.K_EQUALS, pygame.K_KP_PLUS):
-                        zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
-                    elif event.key in (pygame.K_MINUS, pygame.K_KP_MINUS):
+                    elif event.key in (pygame.K_PLUS, pygame.K_EQUALS, pygame.K_KP_PLUS) and not PAUSE:
                         zoom = min(MAX_ZOOM, zoom * ZOOM_STEP)
+                    elif event.key in (pygame.K_MINUS, pygame.K_KP_MINUS) and not PAUSE:
+                        zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
                     elif event.key == pygame.K_ESCAPE:
                         running = False
                     elif event.key == pygame.K_e:
@@ -305,10 +369,15 @@ class Render:
                             show_stats = True
                         else:
                             show_stats = False
+                    elif event.key == pygame.K_SPACE:
+                        if not PAUSE:
+                            PAUSE = True
+                        else:
+                            PAUSE = False
                 if event.type == pygame.MOUSEWHEEL:
-                    if event.y > 0:
+                    if event.y > 0  and not PAUSE:
                         zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
-                    elif event.y < 0:
+                    elif event.y < 0  and not PAUSE:
                         zoom = min(MAX_ZOOM, zoom * ZOOM_STEP)
 
 
@@ -316,16 +385,16 @@ class Render:
             screen.blit(img_back_ground, back_rect)
 
             viewport_width, viewport_height = screen.get_size()
-            base_scale = self.fit_scale(viewport_width, viewport_height)
-            SCALE = base_scale * zoom
+            if not PAUSE:
+                base_scale = self.fit_scale(viewport_width, viewport_height)
+                SCALE = base_scale * zoom
+                if self.turns_moves:
+                    while turn_timer >= TURN_DURATION_MS and self.turn < len(self.turns_moves) - 1:
+                        turn_timer -= TURN_DURATION_MS
+                        self.turn += 1
 
-            if self.turns_moves:
-                while turn_timer >= TURN_DURATION_MS and self.turn < len(self.turns_moves) - 1:
-                    turn_timer -= TURN_DURATION_MS
-                    self.turn += 1
-
-                progress = turn_timer / TURN_DURATION_MS
-                self.update_turn(SCALE, viewport_width, viewport_height, progress)
+                    progress = turn_timer / TURN_DURATION_MS
+                    self.update_turn(SCALE, viewport_width, viewport_height, progress)
 
             for connection in self.connections:
                 zone1 = connection.zones[0]
@@ -353,10 +422,69 @@ class Render:
                     (screen_x, screen_y),
                     40
                 )
+                if zone.color == ZoneColor.RAINBOW:
+                    colors = [
+                        (184, 16, 222),
+                        (0, 235, 31),
+                        (14, 132, 158),
+                        (169, 3, 252),
+                        (252, 186, 3),
+                        (255, 165, 0),
+                        (0, 255, 255),
+                        (220, 20, 60),
+                        (61, 2, 2),
+                        (211, 175, 55),
+                        (111, 3, 252),
+                        (15, 73, 219),
+                        (235, 64, 52),
+                        (252, 5, 232),
+                        (102, 1, 1)
+                    ]
+                    row_1 = colors.pop(randint(0, len(colors) - 1))
+                    row_2 = colors.pop(randint(0, len(colors) - 1))
+                    row_3 = colors.pop(randint(0, len(colors) - 1))
+                    row_4 = colors.pop(randint(0, len(colors) - 1))
+                    pygame.draw.circle(
+                        screen,
+                        row_1,
+                        (screen_x, screen_y),
+                        40,
+                        40,
+                        draw_bottom_right=True,
+                    )
+                    pygame.draw.circle(
+                        screen,
+                        row_2,
+                        (screen_x, screen_y),
+                        40,
+                        40,
+                        draw_bottom_left=True,
+                    )
+                    pygame.draw.circle(
+                        screen,
+                        row_3,
+                        (screen_x, screen_y),
+                        40,
+                        40,
+                        draw_top_left=True,
+                    )
+                    pygame.draw.circle(
+                        screen,
+                        row_4,
+                        (screen_x, screen_y),
+                        40,
+                        40,
+                        draw_top_right=True,
+                    )
+                    colors.append(row_1)
+                    colors.append(row_2)
+                    colors.append(row_3)
+                    colors.append(row_4)
+
                 if show_zones:
                     self.draw_text(screen, 15, screen_x, screen_y - 60, zone.name)
             if show_stats:
-                self.show_stats(screen)
+                self.show_stats(screen, PAUSE)
             sprites.draw(screen)
             pygame.display.flip()
 

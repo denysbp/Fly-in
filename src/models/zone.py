@@ -34,7 +34,7 @@ class ZoneColor(Enum):
     ORANGE = (255, 165, 0)
     YELLOW = (252, 186, 3)
     VIOLET = (169, 3, 252)
-    RAINBOW = (52, 77, 217)
+    RAINBOW = (14, 132, 158)
     LIME = (0, 235, 31)
     MAGENTA = (184, 16, 222)
 

@@ -16,9 +16,16 @@ def main() -> None:
         engine.solver_path()
         # print(engine.turn_moves)
         for c in engine.out_put:
-            print(c, end="")
+            print(c)
         print(f"Total turns: {engine.turns}")
-        render = Render(generator.zones, generator.drones, generator.connections, engine.turn_moves, engine.out_put)
+        render = Render(
+            generator.zones,
+            generator.drones,
+            generator.connections,
+            engine.turn_moves,
+            engine.out_put,
+            generator.end
+            )
         render.run()
     except ParserError as e:
         print(e)
