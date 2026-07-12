@@ -3,28 +3,43 @@ PACKAGE := src/
 MAP ?= ./maps/easy/01_linear_path.txt
 MODELS := $(PACKAGE)models/
 VISUALIZATION := $(PACKAGE)visualization/
+VENV := .venv
 
+VENV_PY := $(VENV)/bin/python
+VENV_PIP := $(VENV)/bin/pip
 
-run:
-	@python3 fly-in.py $(MAP)
-install_venv:
-	$(PY) -m venv .venv
+$(VENV)/bin/activate: requirements.txt
+	@echo "Creating venv..."
+	$(PY) -m venv $(VENV)
+	@echo "Installing dependencies..."
+	$(VENV_PIP) install --upgrade pip
+	$(VENV_PIP) install -r requirements.txt
+	@touch $(VENV)/bin/activate
+all: run
 
-install: requirements.txt
-	pip install -r requirements.txt
+isolation: $(VENV)/bin/activate
 
-debug:
-	$(PY) -m pdb
+run: isolation
+	@PYGAME_HIDE_SUPPORT_PROMPT=1 $(VENV_PY) fly-in.py $(MAP)
 
-lint:
-	$(PY) -m flake8 . && python3 -m mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+install: $(VENV)/bin/activate
+	$(VENV_PIP) install -r requirements.txt
 
-lint-strict:
-	$(PY) -m flake8 . && python3 -m mypy . --strict
+debug: isolation
+	$(VENV_PY) -m pdb
+
+lint: isolation
+	$(VENV_PY) -m flake8 . && $(VENV_PY) -m mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+
+lint-strict: isolation
+	$(VENV_PY) -m flake8 . && $(VENV_PY) -m mypy . --strict
 
 clean:
+	rm -rf $(VENV)
 	rm -rf $(PACKAGE)__pycache__
 	rm -rf $(MODELS)__pycache__
 	rm -rf $(VISUALIZATION)__pycache__
 	rm -rf __pycache__
 	rm -rf .mypy_cache
+
+.PHONY: isolation run install debug lint lint-strict clean

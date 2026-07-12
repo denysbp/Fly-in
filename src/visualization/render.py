@@ -1,6 +1,5 @@
 from os import environ
 from random import randint
-import pygame
 from pygame import Surface, Rect
 from typing import TYPE_CHECKING, List, Union
 from ..models import ZoneColor
@@ -9,10 +8,11 @@ from .settings import (
     TURN_DURATION_MS, ZOOM_STEP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, FIT_MARGIN,
     FIT_SCALE_FACTOR
 )
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+import pygame  # noqa: E402
 if TYPE_CHECKING:
     from ..models import Drone, Connections, Zone
 
-environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 pygame.init()
 
 
