@@ -10,5 +10,8 @@ __all__ = [
     "Zone",
     "ParserError",
     "Drone",
-    "Connections"
+    "Connections",
+    "Engine",
+    "Pathfinder",
+    "Render"
 ]

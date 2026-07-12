@@ -2,9 +2,10 @@ from typing import TYPE_CHECKING, List
 from .models import ZoneType
 from heapq import heapify, heappop, heappush
 if TYPE_CHECKING:
-    from models import Drone, Zone, Connections, ZoneType
+    from models import Drone, Zone, Connections
     from generator import Generator
 import sys
+
 
 class Pathfinder:
     def __init__(self, zones: List["Zone"]):
@@ -17,12 +18,11 @@ class Pathfinder:
         counter = 0
         predecessors = {zone: None for zone in self.zones}
 
-        #inintialize a priority queue
+        # inintialize a priority queue
         pq = [(0, counter, start)]
         heapify(pq)
 
-
-        #set for visiteds
+        # set for visiteds
         visited = set()
         current_zone: "Zone"
         while pq:  # While the priority queue isn't empty
@@ -60,6 +60,7 @@ class Pathfinder:
         path.reverse()
         return path
 
+
 class Color:
     """
     Class for Color
@@ -82,6 +83,7 @@ class Color:
         self.pink = '\033[95m'
         self.lightcyan = '\033[96m'
         self.end = '\033[m'
+
 
 class Engine:
     def __init__(self, generator: "Generator", path_finder: "Pathfinder"):
@@ -124,8 +126,11 @@ class Engine:
                     if drone.stop > 0:
                         drone.stop -= 1
 
-                    elif drone.destination == self.end or drone.destination.has_space():
-                        drone.arrived_to_zone(is_sink=drone.destination == self.end)
+                    elif drone.destination == self.end \
+                            or drone.destination.has_space():
+                        drone.arrived_to_zone(
+                            is_sink=drone.destination == self.end
+                        )
                         if drone.current_zone == self.end:
                             drone.solved = True
 
@@ -140,12 +145,17 @@ class Engine:
                 next_zone = drone.path[drone.index + 1]
                 connection = drone.current_zone.find_connection(next_zone)
                 if not next_zone.has_space():
-                    new_path = self.pathfinder.dijkstra(drone.current_zone, self.end)
+                    new_path = self.pathfinder.dijkstra(
+                        drone.current_zone,
+                        self.end
+                    )
                     if new_path:
                         drone.path = new_path
                         drone.index = 0
                         next_zone = drone.path[drone.index + 1]
-                        connection = drone.current_zone.find_connection(next_zone)
+                        connection = drone.current_zone.find_connection(
+                            next_zone
+                        )
                 if connection.can_go() and next_zone.has_space():
                     drone.deslocate(drone.current_zone, connection)
 

@@ -6,5 +6,6 @@ __all__ = [
     "Connections",
     "Drone",
     "Zone",
-    "ZoneType"
+    "ZoneType",
+    "ZoneColor"
 ]

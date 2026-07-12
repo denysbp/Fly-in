@@ -4,12 +4,13 @@ import pygame
 from pygame import Surface, Rect
 from typing import TYPE_CHECKING, List, Union
 from ..models import ZoneColor
-from .settings import FPS, HEIGHT, WIDTH, Color, drone_2, back_ground, \
-    TURN_DURATION_MS, ZOOM_STEP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, FIT_MARGIN, \
+from .settings import (
+    FPS, HEIGHT, WIDTH, Color, drone_2, back_ground,
+    TURN_DURATION_MS, ZOOM_STEP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, FIT_MARGIN,
     FIT_SCALE_FACTOR
+)
 if TYPE_CHECKING:
-    from ..engine import Engine
-    from ..models import Drone, Connections, Zone, ZoneType, ZoneColor
+    from ..models import Drone, Connections, Zone
 
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 pygame.init()
@@ -69,7 +70,7 @@ class Render:
         end
     ):
         self.zones: List["Zone"] = zones
-        self.drones: List["Drone"]= drones
+        self.drones: List["Drone"] = drones
         self.connections: List["Connections"] = connections
         self.turns_moves: List[List[List]] = turns_moves
         self.out_put: List[str] = out_put
@@ -177,7 +178,8 @@ class Render:
         progress: float = 0.0
     ):
         offset_x, offset_y, min_x, min_y = self.off_set(
-        SCALE, viewport_width, viewport_height)
+            SCALE, viewport_width, viewport_height
+        )
         progress = max(0.0, min(1.0, progress))
 
         current_turn = self.turns_moves[self.turn]
@@ -240,7 +242,7 @@ class Render:
     def draw_text(self, surface: Surface, size, x, y, text):
         font_name = pygame.font.match_font("arial")
         font = pygame.font.Font(font_name, size)
-        text_surface =  font.render(text, True, self.color.WHITE)
+        text_surface = font.render(text, True, self.color.WHITE)
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x, y)
         surface.blit(text_surface, text_rect)
@@ -324,14 +326,16 @@ class Render:
         )
         surface.blit(
             turns_label,
-            (badge.x + 18,badge.y + 11)
+            (badge.x + 18, badge.y + 11)
         )
         surface.blit(
             turns_value,
             (badge.right - turns_value.get_width() - 18, badge.y + 7)
         )
 
-        def draw_shortcut(x, base_y, key_text, description, pause: bool = False):
+        def draw_shortcut(
+                x, base_y, key_text, description, pause: bool = False
+        ):
             if key_text == "SPACE" and pause:
                 key_color = self.color.GREEN
             elif key_text == "SPACE" and not pause:
@@ -339,7 +343,9 @@ class Render:
             else:
                 key_color = self.color.GOLD
             key_surface = body_font.render(key_text, True, key_color)
-            desc_surface = body_font.render(description, True, self.color.WHITE)
+            desc_surface = body_font.render(
+                description, True, self.color.WHITE
+            )
             key_box = pygame.Rect(
                 x, base_y,
                 key_surface.get_width() + 24,
@@ -393,7 +399,7 @@ class Render:
         turn_timer = 0
         img_back_ground = pygame.image.load(back_ground).convert()
         size = pygame.display.get_window_size()
-        img_back_ground =  pygame.transform.scale(img_back_ground, size)
+        img_back_ground = pygame.transform.scale(img_back_ground, size)
         back_rect = img_back_ground.get_rect()
         show_zones = False
         show_stats = False
@@ -419,7 +425,7 @@ class Render:
                         pygame.RESIZABLE
                     )
                     size = pygame.display.get_window_size()
-                    img_back_ground =  pygame.transform.scale(
+                    img_back_ground = pygame.transform.scale(
                         img_back_ground,
                         size
                     )
@@ -439,7 +445,7 @@ class Render:
                                 pygame.FULLSCREEN
                             )
                             size = pygame.display.get_window_size()
-                            img_back_ground =  pygame.transform.scale(
+                            img_back_ground = pygame.transform.scale(
                                 img_back_ground,
                                 size
                             )
@@ -458,12 +464,12 @@ class Render:
                         pygame.K_PLUS,
                         pygame.K_EQUALS,
                         pygame.K_KP_PLUS
-                        ) and not PAUSE:
+                    ) and not PAUSE:
                         zoom = min(MAX_ZOOM, zoom * ZOOM_STEP)
                     elif event.key in (
                         pygame.K_MINUS,
                         pygame.K_KP_MINUS
-                        ) and not PAUSE:
+                    ) and not PAUSE:
                         zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
                     elif event.key == pygame.K_ESCAPE:
                         running = False
@@ -472,7 +478,7 @@ class Render:
                             show_zones = True
                         else:
                             show_zones = False
-                    elif event.key ==  pygame.K_q:
+                    elif event.key == pygame.K_q:
                         if not show_stats:
                             show_stats = True
                         else:
@@ -483,11 +489,10 @@ class Render:
                         else:
                             PAUSE = False
                 if event.type == pygame.MOUSEWHEEL:
-                    if event.y > 0  and not PAUSE:
+                    if event.y > 0 and not PAUSE:
                         zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
-                    elif event.y < 0  and not PAUSE:
+                    elif event.y < 0 and not PAUSE:
                         zoom = min(MAX_ZOOM, zoom * ZOOM_STEP)
-
 
             screen.fill((0, 0, 0))
             screen.blit(img_back_ground, back_rect)

@@ -92,8 +92,9 @@ class Parser:
 
             elif "max_drones" in key:
                 if not value.isdigit():
+                    error = f"positive/numbers line:{nb_line}"
                     raise ParserError(
-                        f"Max drones values should be positive/numbers line:{nb_line}"
+                        f"Max drones values should be {error}"
                     )
                 return (key, int(value))
 
@@ -231,8 +232,9 @@ class Parser:
                         )
                     name, x, y = value.split(" ")
                     if name in self.hubs_names:
+                        error = f"defined on line {nb_line}"
                         raise ParserError(
-                            f"The hub {name} was already defined on line {nb_line}"
+                            f"The hub {name} was already {error}"
                         )
                     if "-" in name or " " in name:
                         raise ParserError(
@@ -268,8 +270,9 @@ class Parser:
                             )
                         elif (zone_1, zone_2) in self.connections_name:
                             erro = f"{zone_1}-{zone_2}"
+                            error = f"already defined line:{nb_line}"
                             raise ParserError(
-                                f"This connection {erro} was already defined line:{nb_line}"
+                                f"This connection {erro} was {error}"
                             )
                         elif (zone_1, zone_2) in self.invalid_connections:
                             raise ParserError(
@@ -354,8 +357,9 @@ class Parser:
                     parts = value.split(" ", 3)
                     name, x, y, brackets = parts
                     if name in self.hubs_names:
+                        error = f"defined line:{nb_line}"
                         raise ParserError(
-                            f"The hub {name} was already defined line:{nb_line}"
+                            f"The hub {name} was already {error}"
                         )
                     if "-" in name or " " in name:
                         raise ParserError(
@@ -387,8 +391,9 @@ class Parser:
                         temp = self.parse_brackets(brackets, nb_line)
                         for item_key, _ in temp:
                             if item_key != "max_link_capacity":
+                                error = f"for connection line:{nb_line}"
                                 raise ParserError(
-                                    f'Invalid config type "{item_key}" for connection line:{nb_line}'
+                                    f'Invalid config type "{item_key}" {error}'
                                 )
                         if zone_1 not in self.hubs_names:
                             raise ParserError(
@@ -400,8 +405,9 @@ class Parser:
                             )
                         elif (zone_1, zone_2) in self.connections_name:
                             erro = f"{zone_1}-{zone_2}"
+                            error = f"defined line:{nb_line}"
                             raise ParserError(
-                                f"This connection {erro} was already defined line:{nb_line}"
+                                f"This connection {erro} was already {error}"
                             )
                         elif (zone_1, zone_2) in self.invalid_connections:
                             raise ParserError(
@@ -431,7 +437,6 @@ class Parser:
             None
         """
         try:
-            SKIPPED_LINES = 0
             with open(self.map) as f:
                 lines = f.readlines()
                 if not lines:
@@ -445,9 +450,11 @@ class Parser:
                     if not line:
                         continue
                     self.parse_line(line, nb_line)
-                    if self.nb_drones < 0 and (len(self.hubs) > 0 or len(self.connections) > 0):
+                    if self.nb_drones < 0 and (
+                            len(self.hubs) > 0 or len(self.connections) > 0):
+                        error = f"numbers off drones line:{nb_line}"
                         raise ParserError(
-                            f"Erro The first line must be the numbers off drones line:{nb_line}"
+                            f"Erro The first line must be the {error}"
                         )
 
         except ParserError as e:
