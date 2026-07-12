@@ -126,12 +126,11 @@ class Engine:
 
                     elif drone.destination == self.end or drone.destination.has_space():
                         drone.arrived_to_zone(is_sink=drone.destination == self.end)
+                        if drone.current_zone == self.end:
+                            drone.solved = True
 
             for drone in self.drones:
                 if drone.solved:
-                    continue
-                if drone.current_zone == self.end:
-                    drone.solved = True
                     continue
                 if drone.moving:
                     continue
@@ -163,10 +162,7 @@ class Engine:
                 ]
                 if drone.moving:
                     name = f"{drone.destination.name}"
-                    out_put += f"{self.color.red}D{drone.id}-{name}{self.color.end} "
-                elif drone.solved:
-                    name = "Delivered"
-                    out_put += f"{self.color.green}D{drone.id}-{name}{self.color.end} "
+                    out_put += f"D{drone.id}-{name}  "
                 turn.append(info)
             self.turn_moves.append(turn)
             self.out_put.append(out_put)

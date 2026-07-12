@@ -6,7 +6,7 @@
 nb_drones: 25
 
 # === LAYER 0: The Nightmare Begins ===
-start_hub: start 0 0 [color=green max_drones=25]
+start_hub: start 0 0 [color=green]
 
 # Single-file entry gates (extreme bottleneck)
 hub: gate_hell1 2 0 [color=red max_drones=1]
@@ -15,8 +15,7 @@ hub: gate_hell3 4 0 [color=red max_drones=1]
 hub: gate_hell4 5 0 [color=red max_drones=1]
 hub: gate_hell5 6 0 [color=red max_drones=1]
 
-#=== LAYER 1: The Maze of Despair ===
-
+# === LAYER 1: The Maze of Despair ===
 # Multiple interconnected dead ends and loops
 hub: maze_trap_a1 2 1 [color=purple]
 hub: maze_trap_a2 3 1 [color=purple]
@@ -86,7 +85,7 @@ hub: final_torture4 20 0 [color=crimson max_drones=1]
 hub: final_torture5 21 0 [color=crimson max_drones=1]
 
 # The ultimate goal
-end_hub: impossible_goal 23 0 [color=rainbow max_drones=25]
+end_hub: impossible_goal 23 0 [color=rainbow]
 
 # === CONNECTIONS: The Web of Suffering ===
 

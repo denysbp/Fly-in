@@ -14,10 +14,8 @@ def main() -> None:
         path = Pathfinder(generator.zones)
         engine = Engine(generator, path)
         engine.solver_path()
-        # print(engine.turn_moves)
         for c in engine.out_put:
             print(c)
-        print(f"Total turns: {engine.turns}")
         render = Render(
             generator.zones,
             generator.drones,
@@ -32,9 +30,9 @@ def main() -> None:
         sys.exit(1)
     except KeyboardInterrupt as e:
         print(e)
-    # except AttributeError as e:
-    #     print(e)
-    #     sys.exit(1)
+    except AttributeError as e:
+        print(e)
+        sys.exit(1)
 
 
 if __name__ == "__main__":
