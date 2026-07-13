@@ -31,5 +31,12 @@ FIT_SCALE_FACTOR = 0.78
 
 
 img_dir = path.join(path.dirname(__file__), 'img')
+drone_1 = path.join(img_dir, "drone1.png")
 drone_2 = path.join(img_dir, "drone2.png")
+drone_3 = path.join(img_dir, "drone2.png")
+drone_4 = path.join(img_dir, "drone3.png")
+drone_5 = path.join(img_dir, "drone4.png")
+drone_6 = path.join(img_dir, "drone5.png")
+drone_7 = path.join(img_dir, "drone7.png")
+drone_8 = path.join(img_dir, "drone8.png")
 back_ground = path.join(img_dir, "background.jpg")

@@ -6,7 +6,8 @@ from ..models import ZoneColor
 from .settings import (
     FPS, HEIGHT, WIDTH, Color, drone_2, back_ground,
     TURN_DURATION_MS, ZOOM_STEP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, FIT_MARGIN,
-    FIT_SCALE_FACTOR
+    FIT_SCALE_FACTOR, drone_1, drone_3, drone_4, drone_5, drone_6, drone_7,
+    drone_8
 )
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame  # noqa: E402
@@ -27,10 +28,41 @@ class DroneSprite(pygame.sprite.Sprite):
         solved: bool
     ):
         pygame.sprite.Sprite.__init__(self)
-        self.image: Surface = pygame.transform.scale(
-            pygame.image.load(drone_2).convert(), (50, 30)
-        )
-        self.image.set_colorkey((0, 0, 0))
+        self.frames = [
+            pygame.transform.scale(
+                pygame.image.load(drone_1).convert_alpha(),
+                (100, 140)
+            ),
+            pygame.transform.scale(
+                pygame.image.load(drone_2).convert_alpha(),
+                (100, 140)
+            ),
+            pygame.transform.scale(
+                pygame.image.load(drone_3).convert_alpha(),
+                (100, 140)
+            ),
+            pygame.transform.scale(
+                pygame.image.load(drone_4).convert_alpha(),
+                (100, 140)
+            ),
+            pygame.transform.scale(
+                pygame.image.load(drone_5).convert_alpha(),
+                (100, 140)
+            ),
+            pygame.transform.scale(
+                pygame.image.load(drone_6).convert_alpha(),
+                (100, 140)
+            ),
+            pygame.transform.scale(
+                pygame.image.load(drone_7).convert_alpha(),
+                (100, 140)
+            ),
+            pygame.transform.scale(
+                pygame.image.load(drone_8).convert_alpha(),
+                (100, 140)
+            ),
+        ]
+        self.image = self.frames[0]
         self.rect: Rect = self.image.get_rect()
         self.id: int = id
         self.current_zone: "Zone" = current_zone
@@ -38,6 +70,8 @@ class DroneSprite(pygame.sprite.Sprite):
         self.destination: Union["Zone" | None] = destination
         self.current_connection: Union["Connections" | None] = curr_connection
         self.solved: bool = solved
+        self.frame = 0
+        self.frame_duration = 0
 
     def update(
         self,
@@ -57,6 +91,15 @@ class DroneSprite(pygame.sprite.Sprite):
         self.current_connection: Union["Connections" | None] = curre_connection
         self.solved: bool = solved
         self.rect.center = (x, y)
+        self.update_image()
+
+    def update_image(self):
+        now = pygame.time.get_ticks()
+
+        if now - self.frame_duration >= 25:
+            self.frame_duration = now
+            self.frame = (self.frame + 1) % len(self.frames)
+            self.image = self.frames[self.frame]
 
 
 class Render:

@@ -1,9 +1,15 @@
-from src import ParserError, Parser, Generator, Engine, Pathfinder, Render
+from src import ParserError, Parser, Generator, Engine, Pathfinder
 import sys
+from os import environ
+environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
+from src import Render  # noqa: E402
 
 
 def main() -> None:
     try:
+        if len(sys.argv) != 2:
+            print("Usage: main script <fly-in.py> <map>")
+            return
         file = sys.argv[1]
         parser = Parser(file)
         parser.parsing()
