@@ -419,6 +419,9 @@ class Render:
         draw_shortcut(x3, row_y, "E", "Toggle zone names")
         draw_shortcut(x3, row_y + line_spacing, "SPACE", "Pause", pause)
 
+    def transparency_rgb(self):
+        pass
+
     def run(self) -> None:
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
         sprites = pygame.sprite.Group()
@@ -594,6 +597,13 @@ class Render:
                     zone.color.value,
                     (screen_x, screen_y),
                     40
+                )
+                pygame.draw.circle(
+                    screen,
+                    (128, 128, 128),
+                    (screen_x, screen_y),
+                    40,
+                    7
                 )
                 if zone.color == ZoneColor.RAINBOW:
                     colors = [

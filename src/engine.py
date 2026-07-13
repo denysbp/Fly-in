@@ -41,11 +41,15 @@ class Pathfinder:
                 if neighbor.type == ZoneType.blocked:
                     continue
                 weight = neighbor.zone_cost()
+                if neighbor.type == ZoneType.priority:
+                    weight = 0.9
                 if not neighbor.has_space():
                     weight += 1000
                 #  Calculate the distance from current_zone to the neighbor
                 tentative_distance = current_distance + weight
                 if tentative_distance < distances[neighbor]:
+                    if neighbor.type == ZoneType.priority:
+                        weight = 1
                     distances[neighbor] = tentative_distance
                     predecessors[neighbor] = current_zone
                     heappush(pq, (tentative_distance, counter, neighbor))
@@ -101,23 +105,6 @@ class Engine:
     def solver_path(self) -> None:
         for drone in self.drones:
             drone.path = self.pathfinder.dijkstra(self.start, self.end)
-
-        initial_turn = []
-        initial_out_put: str = ""
-        for drone in self.drones:
-            info = [
-                drone.id,
-                drone.current_zone,
-                drone.destination,
-                drone.current_connection,
-                drone.moving,
-                drone.solved
-            ]
-            initial_out_put += f"D{drone.id}-{drone.current_zone.name}\n"
-            initial_turn.append(info)
-
-        self.turn_moves.append(initial_turn)
-        self.out_put.append(initial_out_put)
 
         while not all(drone.solved for drone in self.drones):
             self.turns += 1
@@ -175,4 +162,5 @@ class Engine:
                     out_put += f"D{drone.id}-{name}  "
                 turn.append(info)
             self.turn_moves.append(turn)
-            self.out_put.append(out_put)
+            if out_put:
+                self.out_put.append(out_put)
