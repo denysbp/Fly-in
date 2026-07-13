@@ -106,21 +106,34 @@ class Engine:
         for drone in self.drones:
             drone.path = self.pathfinder.dijkstra(self.start, self.end)
 
+        initial_moves = []
+        for drone in self.drones:
+            info = [
+                    drone.id,
+                    drone.current_zone,
+                    drone.destination,
+                    drone.current_connection,
+                    drone.moving,
+                    drone.solved
+                ]
+            initial_moves.append(info)
+        self.turn_moves.append(initial_moves)
         while not all(drone.solved for drone in self.drones):
             self.turns += 1
-            for drone in self.drones:
-                if drone.moving:
-                    if drone.stop > 0:
-                        drone.stop -= 1
+            # for drone in self.drones:
+            #     if drone.moving:
+            #         if drone.stop > 0:
+            #             drone.stop -= 1
 
-                    elif drone.destination == self.end \
-                            or drone.destination.has_space():
-                        drone.arrived_to_zone(
-                            is_sink=drone.destination == self.end
-                        )
-                        if drone.current_zone == self.end:
-                            drone.solved = True
-
+            #         elif drone.destination == self.end \
+            #                 or drone.destination.has_space():
+            #             drone.arrived_to_zone(
+            #                 is_sink=drone.destination == self.end
+            #             )
+            #             if drone.current_zone == self.end:
+            #                 drone.solved = True
+            turn = []
+            out_put: str = ""
             for drone in self.drones:
                 if drone.solved:
                     continue
@@ -145,9 +158,17 @@ class Engine:
                         )
                 if connection.can_go() and next_zone.has_space():
                     drone.deslocate(drone.current_zone, connection)
-
-            turn = []
-            out_put: str = ""
+                if drone.stop > 0:
+                    drone.stop -= 1
+                if drone.destination is None:
+                    continue
+                if drone.destination == self.end \
+                        or drone.destination.has_space():
+                    drone.arrived_to_zone(
+                        is_sink=drone.destination == self.end
+                    )
+                    if drone.current_zone == self.end:
+                        drone.solved = True
             for drone in self.drones:
                 info = [
                     drone.id,

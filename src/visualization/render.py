@@ -110,7 +110,8 @@ class Render:
         connections: List["Connections"],
         turns_moves: List[List],
         out_put: List[str],
-        end
+        end,
+        grade: int
     ):
         self.zones: List["Zone"] = zones
         self.drones: List["Drone"] = drones
@@ -121,6 +122,8 @@ class Render:
         self.sprites: dict = {}
         self.color = Color()
         self.end: "Zone" = end
+        self.grade: int = grade
+        self.out_put: str = ""
 
     def off_set(
         self,
@@ -281,6 +284,10 @@ class Render:
                 round(screen_x),
                 round(screen_y + 10)
             )
+            if drone_info[4]:
+                    name = f"{sprite.destination.name}"
+                    out_put = f"D{sprite.id}-{name}  "
+                    self.out_put += out_put
 
     def draw_text(self, surface: Surface, size, x, y, text):
         font_name = pygame.font.match_font("arial")
@@ -343,7 +350,7 @@ class Render:
 
         turns_label = body_font.render("Total turns:", True, (102, 102, 102))
         turns_value = title_font.render(
-            str(self.turn) + "/" + str((len(self.turns_moves) - 1)),
+            str((self.turn - 1 if self.turn > 0 else 0)) + "/" + str(self.grade),
             True,
             self.color.GOLD
         )

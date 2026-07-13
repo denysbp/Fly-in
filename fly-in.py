@@ -28,7 +28,8 @@ def main() -> None:
             generator.connections,
             engine.turn_moves,
             engine.out_put,
-            generator.end
+            generator.end,
+            engine.turns
             )
         render.run()
     except ParserError as e:
@@ -36,9 +37,9 @@ def main() -> None:
         sys.exit(1)
     except KeyboardInterrupt as e:
         print(e)
-    except AttributeError as e:
-        print(e)
-        sys.exit(1)
+    # except AttributeError as e:
+    #     print(e)
+    #     sys.exit(1)
 
 
 if __name__ == "__main__":
