@@ -1,4 +1,6 @@
 from typing import TYPE_CHECKING, Union
+
+
 from .zone import ZoneType
 
 if TYPE_CHECKING:
@@ -28,11 +30,11 @@ class Drone:
         returns:
             bool: True if the operation succed, False if can't move
         """
-        destination: Union["Zone" | bool] = connection.cross_connection(zone)
+        destination = connection.cross_connection(zone)
         self.current_zone.take_from_zone(self)
-        self.current_zone = None
         self.destination = destination
-        if self.destination.type == ZoneType.restricted:
+        if destination.type == ZoneType.restricted:
+
             self.stop = 1
         self.moving = True
         self.current_connection = connection
@@ -53,8 +55,10 @@ class Drone:
         if not is_sink:
             if not self.current_zone.move_to_zone(self):
                 return False
+
         self.destination = None
         self.moving = False
         self.current_connection = None
+
         self.index += 1
         return True

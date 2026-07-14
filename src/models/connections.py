@@ -43,7 +43,7 @@ class Connections:
 
     def cross_connection(self, zone: "Zone") -> "Zone":
         if not self.can_go():
-            return False
+            raise RuntimeError("Connection cannot move")
         self.moving_to_connection()
         return self.zones[1] if self.zones[0] == zone else self.zones[0]
 

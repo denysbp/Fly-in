@@ -1,10 +1,20 @@
 import sys
-from typing import List, Tuple, Union
+from typing import Tuple, Union
 
 
 class ParserError(Exception):
-    def __init__(self, *args):
+    def __init__(self, *args: object) -> None:
         super().__init__(*args)
+
+
+ConfigItem = tuple[str, Union[int, str]]
+ZoneConfigItem = tuple[str, Union[int, str]]
+ConnectionConfigItem = tuple[str, int]
+
+ZoneConfig = list[ZoneConfigItem]
+ConnectionConfig = list[ConnectionConfigItem]
+
+HubData = list[Union[str, int, ZoneConfig]]
 
 
 class Parser:
@@ -14,13 +24,15 @@ class Parser:
     def __init__(self, map: str) -> None:
         self.map: str = map
         self.nb_drones: int = -1
-        self.hubs: dict[str, dict] = {}
-        self.connections: list[tuple[str, str, Union[int | None]]] = []
-        self.hubs_names: List[str] = []
-        self.connections_name = []
-        self.invalid_connections = []
+        # start_hub/end_hub/hub -> [name, x, y, config?]
+        self.hubs: dict[str, HubData] = {}
+        # (zone_1, zone_2, connection_config)
+        self.connections: list[tuple[str, str, ConnectionConfig]] = []
+        self.hubs_names: list[str] = []
+        self.connections_name: list[tuple[str, str]] = []
+        self.invalid_connections: list[tuple[str, str]] = []
 
-    def parse_brackets(self, brackets: str, nb_line: int) -> List:
+    def parse_brackets(self, brackets: str, nb_line: int) -> ZoneConfig:
         brackets = brackets.removeprefix("[")
         brackets = brackets.removesuffix("]")
         plus_time = 0
@@ -128,7 +140,7 @@ class Parser:
             )
             sys.exit(1)
 
-    def parse_line_config(self, line: str, nb_line) -> None:
+    def parse_line_config(self, line: str, nb_line: int) -> None:
         key, value = line.split(":", 1)
         key = key.strip()
         if "nb_drones" in key:

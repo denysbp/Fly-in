@@ -1,8 +1,8 @@
 [flake8]
 
-exclude = [
+exclude = 
 	.git,
 	__pycache__,
-	venv,
+	.venv,
 	env,
-]
+

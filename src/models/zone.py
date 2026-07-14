@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional, Union
 
 if TYPE_CHECKING:
     from .drone import Drone
@@ -43,13 +43,14 @@ class Zone:
     def __init__(
         self,
         name: str,
-        color: ZoneColor,
+        color: Union[ZoneColor, str],
         x: int,
         y: int,
         max_drones: int = 1,
         type: ZoneType = ZoneType.normal,
     ):
         """
+
         Args:
             name: Zone name
             color: Zone Display color
@@ -88,10 +89,14 @@ class Zone:
             "MAGENTA": ZoneColor.MAGENTA
         }
         self.name: str = name
-        self.color: ZoneColor = colors[color]
+        # parser/generator normalmente passam "RED", "BLUE" etc.
+        self.color: ZoneColor = colors[color] if \
+            isinstance(color, str) else color
+
         self.max_capacity: int = max_drones
         self.occupation: int = 0
-        self.current_drones: list = []
+        self.current_drones: list["Drone"] = []
+
         self.type:  ZoneType = types[type]
         self.x: int = x
         self.y: int = y
@@ -135,10 +140,11 @@ class Zone:
         self.current_drones.remove(drone)
         return True
 
-    def find_connection(self, zone: "Zone") -> "Connections":
+    def find_connection(self, zone: "Zone") -> Optional["Connections"]:
         for connection in self.connections:
             if zone in connection.zones:
                 return connection
+        return None
 
     def has_space(self) -> bool:
         return self.occupation < self.max_capacity
