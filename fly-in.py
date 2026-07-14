@@ -7,7 +7,10 @@ from src import Render  # noqa: E402
 
 def main() -> None:
     try:
-        if len(sys.argv) != 2:
+        visualizer = False
+        if "--visualizer" in sys.argv:
+            visualizer = True
+        elif len(sys.argv) != 2:
             print("Usage: main script <fly-in.py> <map>")
             return
         file = sys.argv[1]
@@ -22,16 +25,17 @@ def main() -> None:
         engine.solver_path()
         for c in engine.out_put:
             print(c)
-        render = Render(
-            generator.zones,
-            generator.drones,
-            generator.connections,
-            engine.turn_moves,
-            engine.out_put,
-            generator.end,
-            engine.turns
-            )
-        render.run()
+        if visualizer:
+            render = Render(
+                generator.zones,
+                generator.drones,
+                generator.connections,
+                engine.turn_moves,
+                engine.out_put,
+                generator.end,
+                engine.turns
+                )
+            render.run()
     except ParserError as e:
         print(e)
         sys.exit(1)

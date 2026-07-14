@@ -5,6 +5,7 @@ MODELS := $(PACKAGE)models/
 VISUALIZATION := $(PACKAGE)visualization/
 VENV := .venv
 
+
 VENV_PY := $(VENV)/bin/python
 VENV_PIP := $(VENV)/bin/pip
 
@@ -23,8 +24,14 @@ isolation: $(VENV)/bin/activate
 run: isolation
 	@PYGAME_HIDE_SUPPORT_PROMPT=1 $(VENV_PY) fly-in.py $(MAP)
 
+render: isolation
+	@PYGAME_HIDE_SUPPORT_PROMPT=1 $(VENV_PY) fly-in.py $(MAP) --visualizer
+
 install: $(VENV)/bin/activate
 	$(VENV_PIP) install -r requirements.txt
+
+test: isolation
+	@PYGAME_HIDE_SUPPORT_PROMPT=1 $(VENV_PY) test.py
 
 debug: isolation
 	$(VENV_PY) -m pdb
@@ -36,11 +43,12 @@ lint-strict: isolation
 	$(VENV_PY) -m flake8 . && $(VENV_PY) -m mypy . --strict
 
 clean:
-	rm -rf $(VENV)
 	rm -rf $(PACKAGE)__pycache__
 	rm -rf $(MODELS)__pycache__
 	rm -rf $(VISUALIZATION)__pycache__
 	rm -rf __pycache__
 	rm -rf .mypy_cache
 
-.PHONY: isolation run install debug lint lint-strict clean
+
+
+.PHONY: isolation run install debug lint lint-strict clean render all test

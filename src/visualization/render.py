@@ -31,35 +31,35 @@ class DroneSprite(pygame.sprite.Sprite):
         self.frames = [
             pygame.transform.scale(
                 pygame.image.load(drone_1).convert_alpha(),
-                (100, 140)
+                (100, 130)
             ),
             pygame.transform.scale(
                 pygame.image.load(drone_2).convert_alpha(),
-                (100, 140)
+                (100, 130)
             ),
             pygame.transform.scale(
                 pygame.image.load(drone_3).convert_alpha(),
-                (100, 140)
+                (100, 130)
             ),
             pygame.transform.scale(
                 pygame.image.load(drone_4).convert_alpha(),
-                (100, 140)
+                (100, 130)
             ),
             pygame.transform.scale(
                 pygame.image.load(drone_5).convert_alpha(),
-                (100, 140)
+                (100, 130)
             ),
             pygame.transform.scale(
                 pygame.image.load(drone_6).convert_alpha(),
-                (100, 140)
+                (100, 130)
             ),
             pygame.transform.scale(
                 pygame.image.load(drone_7).convert_alpha(),
-                (100, 140)
+                (100, 130)
             ),
             pygame.transform.scale(
                 pygame.image.load(drone_8).convert_alpha(),
-                (100, 140)
+                (100, 130)
             ),
         ]
         self.image = self.frames[0]
