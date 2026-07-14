@@ -128,6 +128,283 @@ class Parser:
             )
             sys.exit(1)
 
+    def parse_line_config(self, line: str, nb_line) -> None:
+        key, value = line.split(":", 1)
+        key = key.strip()
+        if "nb_drones" in key:
+            value = value.strip()
+            if value.isdigit():
+                self.nb_drones = int(value)
+            else:
+                raise ParserError(
+                    "Invalid number of Drones, not digit/positive " +
+                    "value"
+                )
+        elif "start_hub" in key:
+            if "start_hub" in self.hubs.keys():
+                raise ParserError(
+                    f"The start_hub was already defined line:{nb_line}"
+                )
+            value = value.strip()
+            valid_split = value.split(" ")
+            if len(valid_split) != 3:
+                raise ParserError(
+                    "The values passed " +
+                    f"don't follow the rules {nb_line}"
+                )
+            name, x, y = value.split(" ")
+            name = name.strip()
+            if "-" in name or " " in name:
+                raise ParserError(
+                    f"Invalid zone name line:{nb_line}"
+                )
+            try:
+                x = int(x)
+                y = int(y)
+            except ValueError:
+                raise ParserError(
+                    f"You passed Non-digit values on line {nb_line}"
+                )
+            temp_list = [
+                name,
+                x,
+                y
+            ]
+            self.hubs["start_hub"] = temp_list
+            self.hubs_names.append(name)
+        elif "end_hub" in key:
+            if "end_hub" in self.hubs.keys():
+                raise ParserError(
+                    f"The end_hub was already defined line:{nb_line}"
+                )
+            value = value.strip()
+            valid_split = value.split(" ")
+            if len(valid_split) != 3:
+                raise ParserError(
+                    f"Are missing values on line {nb_line}"
+                )
+            name, x, y = value.split(" ")
+            if "-" in name or " " in name:
+                raise ParserError(
+                    f"Invalid zone name line:{nb_line}"
+                )
+            try:
+                x = int(x)
+                y = int(y)
+            except ValueError:
+                raise ParserError(
+                    f"You passed Non-digit values on line {nb_line}"
+                )
+            temp_list = [
+                name,
+                x,
+                y
+            ]
+            self.hubs["end_hub"] = temp_list
+            self.hubs_names.append(name)
+        elif "hub" in key:
+            value = value.strip()
+            valid_split = value.split(" ")
+            if len(valid_split) != 3:
+                raise ParserError(
+                    f"Are missing values on line {nb_line}"
+                )
+            name, x, y = value.split(" ")
+            if name in self.hubs_names:
+                error = f"defined on line {nb_line}"
+                raise ParserError(
+                    f"The hub {name} was already {error}"
+                )
+            if "-" in name or " " in name:
+                raise ParserError(
+                    f"Invalid zone name line:{nb_line}"
+                )
+            try:
+                x = int(x)
+                y = int(y)
+            except ValueError:
+                raise ParserError(
+                    f"You passed Non-digit values on line {nb_line}"
+                )
+            temp_list = [
+                name,
+                x,
+                y
+            ]
+            self.hubs[name] = temp_list
+            self.hubs_names.append(name)
+        elif "connection" in key:
+            value = value.strip()
+            try:
+                zone_1, zone_2 = value.split("-", 1)
+                zone_1 = zone_1.strip()
+                zone_2 = zone_2.strip()
+                if zone_1 not in self.hubs_names:
+                    raise ParserError(
+                        f"The zone: {zone_1} don't exist"
+                    )
+                elif zone_2 not in self.hubs_names:
+                    raise ParserError(
+                        f"The zone: {zone_2} don't exist"
+                    )
+                elif (zone_1, zone_2) in self.connections_name:
+                    erro = f"{zone_1}-{zone_2}"
+                    error = f"already defined line:{nb_line}"
+                    raise ParserError(
+                        f"This connection {erro} was {error}"
+                    )
+                elif (zone_1, zone_2) in self.invalid_connections:
+                    raise ParserError(
+                        f"Invalid connections detected line:{nb_line}"
+                    )
+                self.connections.append((zone_1, zone_2))
+                self.connections_name.append((zone_1, zone_2))
+                self.invalid_connections.append((zone_2, zone_1))
+            except TypeError:
+                print(
+                    "Connections should be: zone_1-zone_2," +
+                    f" line:{nb_line}"
+                )
+                sys.exit(0)
+        else:
+            raise ParserError(
+                f"You should comment this line:{nb_line}"
+            )
+
+    def parse_line_multi_config(self, line: str, nb_line: int) -> None:
+        key, value = line.split(":", 1)
+        key = key.strip()
+        if "start_hub" in key:
+            if "start_hub" in self.hubs.keys():
+                raise ParserError(
+                    f"The start_hub was already defined line:{nb_line}"
+                )
+            value = value.strip()
+            parts = value.split(" ", 3)
+            name, x, y, brackets = parts
+            name = name.strip()
+            if "-" in name or " " in name:
+                raise ParserError(
+                    f"Invalid zone name sline:{nb_line}"
+                )
+            try:
+                x = int(x)
+                y = int(y)
+            except ValueError:
+                raise ParserError(
+                    f"You passed Non-digit values on line {nb_line}"
+                )
+            temp_tuple = self.parse_brackets(brackets, nb_line)
+            temp_list = [
+                name,
+                x,
+                y,
+                temp_tuple
+            ]
+            self.hubs["start_hub"] = temp_list
+            self.hubs_names.append(name)
+        elif "end_hub" in key:
+            if "end_hub" in self.hubs.keys():
+                raise ParserError(
+                    f"The end_hub was already defined line:{nb_line}"
+                )
+            value = value.strip()
+            parts = value.split(" ", 3)
+            name, x, y, brackets = parts
+            if "-" in name or " " in name:
+                raise ParserError(
+                    f"Invalid zone name line:{nb_line}"
+                )
+            try:
+                x = int(x)
+                y = int(y)
+            except ValueError:
+                raise ParserError(
+                    f"You passed Non-digit values on line {nb_line}"
+                )
+            temp_tuple = self.parse_brackets(brackets, nb_line)
+            temp_list = [
+                name,
+                x,
+                y,
+                temp_tuple
+            ]
+            self.hubs["end_hub"] = temp_list
+            self.hubs_names.append(name)
+        elif "hub" in key:
+            value = value.strip()
+            parts = value.split(" ", 3)
+            name, x, y, brackets = parts
+            if name in self.hubs_names:
+                error = f"defined line:{nb_line}"
+                raise ParserError(
+                    f"The hub {name} was already {error}"
+                )
+            if "-" in name or " " in name:
+                raise ParserError(
+                    f"Invalid zone name line:{nb_line}"
+                )
+            try:
+                x = int(x)
+                y = int(y)
+            except ValueError:
+                raise ParserError(
+                    f"You passed Non-digit values on line {nb_line}"
+                )
+            temp_tuple = self.parse_brackets(brackets, nb_line)
+            temp_list = [
+                name,
+                x,
+                y,
+                temp_tuple
+            ]
+            self.hubs[name] = temp_list
+            self.hubs_names.append(name)
+        elif "connection" in key:
+            value = value.strip()
+            try:
+                connections, brackets = value.split(" ", 1)
+                zone_1, zone_2 = connections.split("-", 1)
+                zone_1 = zone_1.strip()
+                zone_2 = zone_2.strip()
+                temp = self.parse_brackets(brackets, nb_line)
+                for item_key, _ in temp:
+                    if item_key != "max_link_capacity":
+                        error = f"for connection line:{nb_line}"
+                        raise ParserError(
+                            f'Invalid config type "{item_key}" {error}'
+                        )
+                if zone_1 not in self.hubs_names:
+                    raise ParserError(
+                        f"The zone: {zone_1} don't exist"
+                    )
+                elif zone_2 not in self.hubs_names:
+                    raise ParserError(
+                        f"The zone: {zone_2} don't exist"
+                    )
+                elif (zone_1, zone_2) in self.connections_name:
+                    erro = f"{zone_1}-{zone_2}"
+                    error = f"defined line:{nb_line}"
+                    raise ParserError(
+                        f"This connection {erro} was already {error}"
+                    )
+                elif (zone_1, zone_2) in self.invalid_connections:
+                    raise ParserError(
+                        f"Invalid connections detected line:{nb_line}"
+                    )
+                self.connections.append((zone_1, zone_2, temp))
+                self.connections_name.append((zone_1, zone_2))
+                self.invalid_connections.append((zone_2, zone_1))
+            except TypeError:
+                print(
+                    f"zones: zone_1-zone_2, line:{nb_line}"
+                )
+                sys.exit(0)
+        else:
+            raise ParserError(
+                f"You should comment this line:{nb_line}"
+            )
+
     def parse_line(self, line: str, nb_line: int) -> None:
         valid_brackets = 0
         row = 0
@@ -150,281 +427,11 @@ class Parser:
                 )
 
             elif not valid_brackets:
-                key, value = line.split(":", 1)
-                key = key.strip()
-                if "nb_drones" in key:
-                    value = value.strip()
-                    if value.isdigit():
-                        self.nb_drones = int(value)
-                    else:
-                        raise ParserError(
-                            "Invalid number of Drones, not digit/positive " +
-                            "value"
-                        )
-                elif "start_hub" in key:
-                    if "start_hub" in self.hubs.keys():
-                        raise ParserError(
-                            f"The start_hub was already defined line:{nb_line}"
-                        )
-                    value = value.strip()
-                    valid_split = value.split(" ")
-                    if len(valid_split) != 3:
-                        raise ParserError(
-                            "The values passed " +
-                            f"don't follow the rules {nb_line}"
-                        )
-                    name, x, y = value.split(" ")
-                    name = name.strip()
-                    if "-" in name or " " in name:
-                        raise ParserError(
-                            f"Invalid zone name line:{nb_line}"
-                        )
-                    try:
-                        x = int(x)
-                        y = int(y)
-                    except ValueError:
-                        raise ParserError(
-                            f"You passed Non-digit values on line {nb_line}"
-                        )
-                    temp_list = [
-                        name,
-                        x,
-                        y
-                    ]
-                    self.hubs["start_hub"] = temp_list
-                    self.hubs_names.append(name)
-                elif "end_hub" in key:
-                    if "end_hub" in self.hubs.keys():
-                        raise ParserError(
-                            f"The end_hub was already defined line:{nb_line}"
-                        )
-                    value = value.strip()
-                    valid_split = value.split(" ")
-                    if len(valid_split) != 3:
-                        raise ParserError(
-                            f"Are missing values on line {nb_line}"
-                        )
-                    name, x, y = value.split(" ")
-                    if "-" in name or " " in name:
-                        raise ParserError(
-                            f"Invalid zone name line:{nb_line}"
-                        )
-                    try:
-                        x = int(x)
-                        y = int(y)
-                    except ValueError:
-                        raise ParserError(
-                            f"You passed Non-digit values on line {nb_line}"
-                        )
-                    temp_list = [
-                        name,
-                        x,
-                        y
-                    ]
-                    self.hubs["end_hub"] = temp_list
-                    self.hubs_names.append(name)
-                elif "hub" in key:
-                    value = value.strip()
-                    valid_split = value.split(" ")
-                    if len(valid_split) != 3:
-                        raise ParserError(
-                            f"Are missing values on line {nb_line}"
-                        )
-                    name, x, y = value.split(" ")
-                    if name in self.hubs_names:
-                        error = f"defined on line {nb_line}"
-                        raise ParserError(
-                            f"The hub {name} was already {error}"
-                        )
-                    if "-" in name or " " in name:
-                        raise ParserError(
-                            f"Invalid zone name line:{nb_line}"
-                        )
-                    try:
-                        x = int(x)
-                        y = int(y)
-                    except ValueError:
-                        raise ParserError(
-                            f"You passed Non-digit values on line {nb_line}"
-                        )
-                    temp_list = [
-                        name,
-                        x,
-                        y
-                    ]
-                    self.hubs[name] = temp_list
-                    self.hubs_names.append(name)
-                elif "connection" in key:
-                    value = value.strip()
-                    try:
-                        zone_1, zone_2 = value.split("-", 1)
-                        zone_1 = zone_1.strip()
-                        zone_2 = zone_2.strip()
-                        if zone_1 not in self.hubs_names:
-                            raise ParserError(
-                                f"The zone: {zone_1} don't exist"
-                            )
-                        elif zone_2 not in self.hubs_names:
-                            raise ParserError(
-                                f"The zone: {zone_2} don't exist"
-                            )
-                        elif (zone_1, zone_2) in self.connections_name:
-                            erro = f"{zone_1}-{zone_2}"
-                            error = f"already defined line:{nb_line}"
-                            raise ParserError(
-                                f"This connection {erro} was {error}"
-                            )
-                        elif (zone_1, zone_2) in self.invalid_connections:
-                            raise ParserError(
-                                f"Invalid connections detected line:{nb_line}"
-                            )
-                        self.connections.append((zone_1, zone_2))
-                        self.connections_name.append((zone_1, zone_2))
-                        self.invalid_connections.append((zone_2, zone_1))
-                    except TypeError:
-                        print(
-                            "Connections should be: zone_1-zone_2," +
-                            f" line:{nb_line}"
-                        )
-                        sys.exit(0)
-                else:
-                    raise ParserError(
-                        f"You should comment this line:{nb_line}"
-                    )
+                self.parse_line_config(line, nb_line)
 
             elif valid_brackets == 2:
-                key, value = line.split(":", 1)
-                key = key.strip()
-                if "start_hub" in key:
-                    if "start_hub" in self.hubs.keys():
-                        raise ParserError(
-                            f"The start_hub was already defined line:{nb_line}"
-                        )
-                    value = value.strip()
-                    parts = value.split(" ", 3)
-                    name, x, y, brackets = parts
-                    name = name.strip()
-                    if "-" in name or " " in name:
-                        raise ParserError(
-                            f"Invalid zone name sline:{nb_line}"
-                        )
-                    try:
-                        x = int(x)
-                        y = int(y)
-                    except ValueError:
-                        raise ParserError(
-                            f"You passed Non-digit values on line {nb_line}"
-                        )
-                    temp_tuple = self.parse_brackets(brackets, nb_line)
-                    temp_list = [
-                        name,
-                        x,
-                        y,
-                        temp_tuple
-                    ]
-                    self.hubs["start_hub"] = temp_list
-                    self.hubs_names.append(name)
-                elif "end_hub" in key:
-                    if "end_hub" in self.hubs.keys():
-                        raise ParserError(
-                            f"The end_hub was already defined line:{nb_line}"
-                        )
-                    value = value.strip()
-                    parts = value.split(" ", 3)
-                    name, x, y, brackets = parts
-                    if "-" in name or " " in name:
-                        raise ParserError(
-                            f"Invalid zone name line:{nb_line}"
-                        )
-                    try:
-                        x = int(x)
-                        y = int(y)
-                    except ValueError:
-                        raise ParserError(
-                            f"You passed Non-digit values on line {nb_line}"
-                        )
-                    temp_tuple = self.parse_brackets(brackets, nb_line)
-                    temp_list = [
-                        name,
-                        x,
-                        y,
-                        temp_tuple
-                    ]
-                    self.hubs["end_hub"] = temp_list
-                    self.hubs_names.append(name)
-                elif "hub" in key:
-                    value = value.strip()
-                    parts = value.split(" ", 3)
-                    name, x, y, brackets = parts
-                    if name in self.hubs_names:
-                        error = f"defined line:{nb_line}"
-                        raise ParserError(
-                            f"The hub {name} was already {error}"
-                        )
-                    if "-" in name or " " in name:
-                        raise ParserError(
-                            f"Invalid zone name line:{nb_line}"
-                        )
-                    try:
-                        x = int(x)
-                        y = int(y)
-                    except ValueError:
-                        raise ParserError(
-                            f"You passed Non-digit values on line {nb_line}"
-                        )
-                    temp_tuple = self.parse_brackets(brackets, nb_line)
-                    temp_list = [
-                        name,
-                        x,
-                        y,
-                        temp_tuple
-                    ]
-                    self.hubs[name] = temp_list
-                    self.hubs_names.append(name)
-                elif "connection" in key:
-                    value = value.strip()
-                    try:
-                        connections, brackets = value.split(" ", 1)
-                        zone_1, zone_2 = connections.split("-", 1)
-                        zone_1 = zone_1.strip()
-                        zone_2 = zone_2.strip()
-                        temp = self.parse_brackets(brackets, nb_line)
-                        for item_key, _ in temp:
-                            if item_key != "max_link_capacity":
-                                error = f"for connection line:{nb_line}"
-                                raise ParserError(
-                                    f'Invalid config type "{item_key}" {error}'
-                                )
-                        if zone_1 not in self.hubs_names:
-                            raise ParserError(
-                                f"The zone: {zone_1} don't exist"
-                            )
-                        elif zone_2 not in self.hubs_names:
-                            raise ParserError(
-                                f"The zone: {zone_2} don't exist"
-                            )
-                        elif (zone_1, zone_2) in self.connections_name:
-                            erro = f"{zone_1}-{zone_2}"
-                            error = f"defined line:{nb_line}"
-                            raise ParserError(
-                                f"This connection {erro} was already {error}"
-                            )
-                        elif (zone_1, zone_2) in self.invalid_connections:
-                            raise ParserError(
-                                f"Invalid connections detected line:{nb_line}"
-                            )
-                        self.connections.append((zone_1, zone_2, temp))
-                        self.connections_name.append((zone_1, zone_2))
-                        self.invalid_connections.append((zone_2, zone_1))
-                    except TypeError:
-                        print(
-                            f"zones: zone_1-zone_2, line:{nb_line}"
-                        )
-                        sys.exit(0)
-                else:
-                    raise ParserError(
-                        f"You should comment this line:{nb_line}"
-                    )
+                self.parse_line_multi_config(line, nb_line)
+
         except ValueError as e:
             print(f"{e} line:{nb_line}")
             sys.exit(0)

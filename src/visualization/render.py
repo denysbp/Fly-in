@@ -270,9 +270,6 @@ class Render:
                 drone_id, screen_x,
                 screen_y
             )
-            if drone_info[5]:
-                screen_x = viewport_width + 100
-                screen_y = viewport_height + 100
 
             sprite.update(
                 drone_info[0],
@@ -284,10 +281,9 @@ class Render:
                 round(screen_x),
                 round(screen_y + 10)
             )
-            if drone_info[4]:
-                    name = f"{sprite.destination.name}"
-                    out_put = f"D{sprite.id}-{name}  "
-                    self.out_put += out_put
+            if drone_info[5]:
+                screen_x = viewport_width + 100
+                screen_y = viewport_height + 100
 
     def draw_text(self, surface: Surface, size, x, y, text):
         font_name = pygame.font.match_font("arial")
@@ -350,7 +346,7 @@ class Render:
 
         turns_label = body_font.render("Total turns:", True, (102, 102, 102))
         turns_value = title_font.render(
-            str((self.turn - 1 if self.turn > 0 else 0)) + "/" + str(self.grade),
+            str(self.turn) + "/" + str(self.grade),
             True,
             self.color.GOLD
         )

@@ -8,6 +8,8 @@ VENV := .venv
 VENV_PY := $(VENV)/bin/python
 VENV_PIP := $(VENV)/bin/pip
 
+all: run
+
 $(VENV)/bin/activate: requirements.txt
 	@echo "Creating venv..."
 	$(PY) -m venv $(VENV)
@@ -15,7 +17,6 @@ $(VENV)/bin/activate: requirements.txt
 	$(VENV_PIP) install --upgrade pip
 	$(VENV_PIP) install -r requirements.txt
 	@touch $(VENV)/bin/activate
-all: run
 
 isolation: $(VENV)/bin/activate
 

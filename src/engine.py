@@ -101,6 +101,7 @@ class Engine:
         self.turns: int = 0
         self.out_put: List[str] = []
         self.color: Color = Color()
+        self.reverved: dict = {}
 
     def solver_path(self) -> None:
         for drone in self.drones:
@@ -120,24 +121,19 @@ class Engine:
         self.turn_moves.append(initial_moves)
         while not all(drone.solved for drone in self.drones):
             self.turns += 1
-            # for drone in self.drones:
-            #     if drone.moving:
-            #         if drone.stop > 0:
-            #             drone.stop -= 1
-
-            #         elif drone.destination == self.end \
-            #                 or drone.destination.has_space():
-            #             drone.arrived_to_zone(
-            #                 is_sink=drone.destination == self.end
-            #             )
-            #             if drone.current_zone == self.end:
-            #                 drone.solved = True
             turn = []
             out_put: str = ""
             for drone in self.drones:
                 if drone.solved:
                     continue
                 if drone.moving:
+                    if drone.destination == self.end \
+                            or drone.destination.has_space():
+                        drone.arrived_to_zone(
+                            is_sink=drone.destination == self.end
+                        )
+                    if drone.current_zone == self.end:
+                        drone.solved = True
                     continue
                 if not drone.path:
                     print("There is no solution for the zones")
@@ -158,8 +154,12 @@ class Engine:
                         )
                 if connection.can_go() and next_zone.has_space():
                     drone.deslocate(drone.current_zone, connection)
+                    if drone.moving:
+                        name = f"{drone.destination.name}"
+                        out_put += f"D{drone.id}-{name}  "
                 if drone.stop > 0:
                     drone.stop -= 1
+                    continue
                 if drone.destination is None:
                     continue
                 if drone.destination == self.end \
@@ -178,9 +178,6 @@ class Engine:
                     drone.moving,
                     drone.solved
                 ]
-                if drone.moving:
-                    name = f"{drone.destination.name}"
-                    out_put += f"D{drone.id}-{name}  "
                 turn.append(info)
             self.turn_moves.append(turn)
             if out_put:
