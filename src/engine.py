@@ -132,6 +132,7 @@ class Engine:
                         drone.arrived_to_zone(
                             is_sink=drone.destination == self.end
                         )
+
                     if drone.current_zone == self.end:
                         drone.solved = True
                     continue

@@ -422,8 +422,126 @@ class Render:
         draw_shortcut(x3, row_y, "E", "Toggle zone names")
         draw_shortcut(x3, row_y + line_spacing, "SPACE", "Pause", pause)
 
-    def transparency_rgb(self):
-        pass
+    def draw_zone(
+        self,
+        screen,
+        zone: "Zone",
+        viewport_width,
+        viewport_height,
+        SCALE,
+        show_zones
+    ):
+        offset_x, offset_y, min_x, min_y = self.off_set(
+            SCALE,
+            viewport_width,
+            viewport_height
+        )
+        screen_x = offset_x + (zone.x - min_x) * SCALE
+        screen_y = offset_y + (zone.y - min_y) * SCALE
+        pygame.draw.circle(
+            screen,
+            zone.color.value,
+            (screen_x, screen_y),
+            40
+        )
+        pygame.draw.circle(
+            screen,
+            (128, 128, 128),
+            (screen_x, screen_y),
+            40,
+            4
+        )
+        white = pygame.Color(255, 255, 255)
+        r, g, b = zone.color.value
+        color = pygame.Color(r, g, b)
+        color50 = white.lerp(color, 0.50)
+        color75 = white.lerp(color, 0.75)
+        color95 = white.lerp(color, 0.95)
+        pygame.draw.circle(
+            screen,
+            color75,
+            (screen_x, screen_y),
+            28,
+        )
+        pygame.draw.circle(
+            screen,
+            color50,
+            (screen_x, screen_y),
+            20,
+        )
+        pygame.draw.circle(
+            screen,
+            color95,
+            (screen_x, screen_y),
+            15,
+        )
+        if zone.color == ZoneColor.RAINBOW:
+            colors = [
+                (184, 16, 222),
+                (0, 235, 31),
+                (14, 132, 158),
+                (169, 3, 252),
+                (252, 186, 3),
+                (255, 165, 0),
+                (0, 255, 255),
+                (220, 20, 60),
+                (61, 2, 2),
+                (211, 175, 55),
+                (111, 3, 252),
+                (15, 73, 219),
+                (235, 64, 52),
+                (252, 5, 232),
+                (102, 1, 1)
+            ]
+            row_1 = colors.pop(randint(0, len(colors) - 1))
+            row_2 = colors.pop(randint(0, len(colors) - 1))
+            row_3 = colors.pop(randint(0, len(colors) - 1))
+            row_4 = colors.pop(randint(0, len(colors) - 1))
+            pygame.draw.circle(
+                screen,
+                row_1,
+                (screen_x, screen_y),
+                40,
+                40,
+                draw_bottom_right=True,
+            )
+            pygame.draw.circle(
+                screen,
+                row_2,
+                (screen_x, screen_y),
+                40,
+                40,
+                draw_bottom_left=True,
+            )
+            pygame.draw.circle(
+                screen,
+                row_3,
+                (screen_x, screen_y),
+                40,
+                40,
+                draw_top_left=True,
+            )
+            pygame.draw.circle(
+                screen,
+                row_4,
+                (screen_x, screen_y),
+                40,
+                40,
+                draw_top_right=True,
+            )
+            colors.append(row_1)
+            colors.append(row_2)
+            colors.append(row_3)
+            colors.append(row_4)
+
+        if show_zones:
+            self.draw_text(
+                screen,
+                15,
+                screen_x,
+                screen_y - 60,
+                zone.name
+            )
 
     def run(self) -> None:
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
@@ -588,93 +706,14 @@ class Render:
                     5
                 )
             for zone in self.zones:
-                offset_x, offset_y, min_x, min_y = self.off_set(
-                    SCALE,
-                    viewport_width,
-                    viewport_height
+                self.draw_zone(
+                screen,
+                zone,
+                viewport_width,
+                viewport_height,
+                SCALE,
+                show_zones
                 )
-                screen_x = offset_x + (zone.x - min_x) * SCALE
-                screen_y = offset_y + (zone.y - min_y) * SCALE
-                pygame.draw.circle(
-                    screen,
-                    zone.color.value,
-                    (screen_x, screen_y),
-                    40
-                )
-                pygame.draw.circle(
-                    screen,
-                    (128, 128, 128),
-                    (screen_x, screen_y),
-                    40,
-                    7
-                )
-                if zone.color == ZoneColor.RAINBOW:
-                    colors = [
-                        (184, 16, 222),
-                        (0, 235, 31),
-                        (14, 132, 158),
-                        (169, 3, 252),
-                        (252, 186, 3),
-                        (255, 165, 0),
-                        (0, 255, 255),
-                        (220, 20, 60),
-                        (61, 2, 2),
-                        (211, 175, 55),
-                        (111, 3, 252),
-                        (15, 73, 219),
-                        (235, 64, 52),
-                        (252, 5, 232),
-                        (102, 1, 1)
-                    ]
-                    row_1 = colors.pop(randint(0, len(colors) - 1))
-                    row_2 = colors.pop(randint(0, len(colors) - 1))
-                    row_3 = colors.pop(randint(0, len(colors) - 1))
-                    row_4 = colors.pop(randint(0, len(colors) - 1))
-                    pygame.draw.circle(
-                        screen,
-                        row_1,
-                        (screen_x, screen_y),
-                        40,
-                        40,
-                        draw_bottom_right=True,
-                    )
-                    pygame.draw.circle(
-                        screen,
-                        row_2,
-                        (screen_x, screen_y),
-                        40,
-                        40,
-                        draw_bottom_left=True,
-                    )
-                    pygame.draw.circle(
-                        screen,
-                        row_3,
-                        (screen_x, screen_y),
-                        40,
-                        40,
-                        draw_top_left=True,
-                    )
-                    pygame.draw.circle(
-                        screen,
-                        row_4,
-                        (screen_x, screen_y),
-                        40,
-                        40,
-                        draw_top_right=True,
-                    )
-                    colors.append(row_1)
-                    colors.append(row_2)
-                    colors.append(row_3)
-                    colors.append(row_4)
-
-                if show_zones:
-                    self.draw_text(
-                        screen,
-                        15,
-                        screen_x,
-                        screen_y - 60,
-                        zone.name
-                    )
             if show_stats:
                 self.show_stats(screen, PAUSE)
             sprites.draw(screen)

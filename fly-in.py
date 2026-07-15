@@ -19,6 +19,8 @@ def main() -> None:
         generator = Generator(parser)
         generator.create_zone()
         generator.create_drone()
+        generator.start.max_capacity = parser.nb_drones
+        generator.end.max_capacity = parser.nb_drones
         generator.create_connections()
         path = Pathfinder(generator.zones)
         engine = Engine(generator, path)

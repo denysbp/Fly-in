@@ -55,7 +55,8 @@ class Drone:
         if not is_sink:
             if not self.current_zone.move_to_zone(self):
                 return False
-
+        else:
+            self.current_zone.move_to_zone(self)
         self.destination = None
         self.moving = False
         self.current_connection = None

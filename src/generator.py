@@ -39,7 +39,6 @@ class Generator:
         for i in range(1, self.parser.nb_drones + 1):
             drone = Drone(self.start, i)
             drone.current_zone.move_to_zone(drone)
-            self.start.occupation += 1
             self.drones.append(drone)
 
     def create_zone(self) -> None:
