@@ -44,14 +44,16 @@ class Generator:
     def create_zone(self) -> None:
         if "end_hub" not in self.parser.hubs.keys():
             raise ParserError(
-                "We cann't find the end_hub"
+                "We can't find the end_hub"
             )
         elif "start_hub" not in self.parser.hubs.keys():
             raise ParserError(
-                "We cann't find the start"
+                "We can't find the start"
             )
         value: list
         for key, value in self.parser.hubs.items():
+            if len(value) == 3:
+                value.append([("color", "PURPLE")])
             name, x, y, config = value
             if "end_hub" in key:
                 self.end = self.zone_control(name, x, y, config)
@@ -66,6 +68,11 @@ class Generator:
                 self.zones.append(self.start)
                 continue
             self.zones.append(self.zone_control(name, x, y, config))
+
+    def invalide_hub(self) -> bool:
+        if (self.start.x, self.start.y) == (self.end.x, self.end.y):
+            return True
+        return False
 
     def zone_control(
         self,

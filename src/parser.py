@@ -65,6 +65,7 @@ class Parser:
             output_list.append(self.brackets_output(temp_3, nb_line))
             output_list.sort(key=lambda x: order[x[0]])
             return output_list
+        return []
 
     def brackets_output(self, config: str, nb_line: int) -> Tuple:
         try:
@@ -101,7 +102,6 @@ class Parser:
                         f"We cann't handle the color '{value}' line:{nb_line}"
                     )
                 return (key, value)
-
             elif "max_drones" in key:
                 if not value.isdigit():
                     error = f"positive/numbers line:{nb_line}"

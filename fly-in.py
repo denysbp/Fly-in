@@ -21,6 +21,10 @@ def main() -> None:
         generator.create_drone()
         generator.start.max_capacity = parser.nb_drones
         generator.end.max_capacity = parser.nb_drones
+        if generator.invalide_hub():
+            raise Exception(
+                "The start and end hub must be differents"
+            )
         generator.create_connections()
         path = Pathfinder(generator.zones)
         engine = Engine(generator, path)
@@ -40,12 +44,15 @@ def main() -> None:
             render.run()
     except ParserError as e:
         print(e)
-        sys.exit(1)
+        sys.exit(0)
     except KeyboardInterrupt as e:
         print(e)
-    # except AttributeError as e:
+    except AttributeError as e:
+        print(e)
+        sys.exit(0)
+    # except Exception as e:
     #     print(e)
-    #     sys.exit(1)
+    #     sys.exit(0)
 
 
 if __name__ == "__main__":

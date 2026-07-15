@@ -16,6 +16,8 @@ class Connections:
         blocked: bool = False,
     ):
         self.zones: tuple["Zone", "Zone"] = (zone_1, zone_2)
+        if max_link_capacity == 0:
+            max_link_capacity = 1
         self.max_link_capacity: int = max_link_capacity
         self.blocked: bool = blocked
         self.moving: int = 0

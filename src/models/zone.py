@@ -92,7 +92,8 @@ class Zone:
         # parser/generator normalmente passam "RED", "BLUE" etc.
         self.color: ZoneColor = colors[color] if \
             isinstance(color, str) else color
-
+        if max_drones == 0:
+            max_drones = 1
         self.max_capacity: int = max_drones
         self.occupation: int = 0
         self.current_drones: list["Drone"] = []

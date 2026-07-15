@@ -707,12 +707,12 @@ class Render:
                 )
             for zone in self.zones:
                 self.draw_zone(
-                screen,
-                zone,
-                viewport_width,
-                viewport_height,
-                SCALE,
-                show_zones
+                    screen,
+                    zone,
+                    viewport_width,
+                    viewport_height,
+                    SCALE,
+                    show_zones
                 )
             if show_stats:
                 self.show_stats(screen, PAUSE)
