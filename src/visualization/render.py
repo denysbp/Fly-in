@@ -333,6 +333,7 @@ class Render:
         x2 = int(width * 0.15)
         x3 = int(width * 0.28)
         x4 = int(width * 0.41)
+        x5 = int(width * 0.54)
         y = panel_y + 18
 
         title_font = pygame.font.SysFont("arial", title_size, bold=True)
@@ -421,6 +422,8 @@ class Render:
 
         draw_shortcut(x3, row_y, "E", "Toggle zone names")
         draw_shortcut(x3, row_y + line_spacing, "SPACE", "Pause", pause)
+        draw_shortcut(x4, row_y + line_spacing, "R", "RELOAD")
+        draw_shortcut(x4, row_y + line_spacing, "R", "RELOAD")
         draw_shortcut(x4, row_y + line_spacing, "R", "RELOAD")
 
     def draw_zone(
@@ -658,10 +661,10 @@ class Render:
                             PAUSE = True
                         else:
                             PAUSE = False
-                    elif event.key == pygame.K_RIGHT:
-                        pass
-                    elif event.key == pygame.K_LEFT:
-                        pass
+                    elif event.key == pygame.K_RIGHT and not PAUSE:
+                        self.turn += 1 if self.turn < len(self.turns_moves) - 1 else 0
+                    elif event.key == pygame.K_LEFT and not PAUSE:
+                        self.turn -= 1 if self.turn > 0 else 0 
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0 and not PAUSE:
                         zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
