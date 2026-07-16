@@ -124,6 +124,7 @@ class Render:
         self.end: "Zone" = end
         self.grade: int = grade
         self.out_put: str = ""
+        self.previous = []
 
     def off_set(
         self,
@@ -221,7 +222,8 @@ class Render:
         self, SCALE: int,
         viewport_width: int,
         viewport_height: int,
-        progress: float = 0.0
+        progress: float = 0.0,
+        get_back: int = 0
     ):
         offset_x, offset_y, min_x, min_y = self.off_set(
             SCALE, viewport_width, viewport_height
@@ -237,14 +239,13 @@ class Render:
         previous_turn_by_id = {
             drone_info[0]: drone_info for drone_info in previous_turn
         }
-
+        previous = []
         for drone_info in current_turn:
             sprite = self.sprites[drone_info[0]]
             previous_drone_info = previous_turn_by_id.get(
                 drone_info[0],
                 drone_info
             )
-
             start_x, start_y = self.drone_snapshot_position(
                 previous_drone_info,
                 SCALE,
@@ -284,7 +285,6 @@ class Render:
             if drone_info[5]:
                 screen_x = viewport_width + 100
                 screen_y = viewport_height + 100
-
     def draw_text(self, surface: Surface, size, x, y, text):
         font_name = pygame.font.match_font("arial")
         font = pygame.font.Font(font_name, size)
@@ -332,7 +332,7 @@ class Render:
         x1 = padding_x
         x2 = int(width * 0.15)
         x3 = int(width * 0.28)
-
+        x4 = int(width * 0.41)
         y = panel_y + 18
 
         title_font = pygame.font.SysFont("arial", title_size, bold=True)
@@ -421,6 +421,7 @@ class Render:
 
         draw_shortcut(x3, row_y, "E", "Toggle zone names")
         draw_shortcut(x3, row_y + line_spacing, "SPACE", "Pause", pause)
+        draw_shortcut(x4, row_y + line_spacing, "R", "RELOAD")
 
     def draw_zone(
         self,
@@ -627,6 +628,8 @@ class Render:
                             viewport_width,
                             viewport_height
                         )
+                    elif event.key == pygame.K_r:
+                        self.turn = 0
                     elif event.key in (
                         pygame.K_PLUS,
                         pygame.K_EQUALS,
@@ -655,6 +658,10 @@ class Render:
                             PAUSE = True
                         else:
                             PAUSE = False
+                    elif event.key == pygame.K_RIGHT:
+                        pass
+                    elif event.key == pygame.K_LEFT:
+                        pass
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0 and not PAUSE:
                         zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
