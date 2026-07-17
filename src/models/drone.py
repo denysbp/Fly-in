@@ -16,8 +16,8 @@ class Drone:
         self.id: int = id
         self.current_zone: "Zone" = start_zone
         self.moving: bool = False
-        self.destination: Union["Zone" | None] = None
-        self.current_connection: Union["Connections" | None] = None
+        self.destination: Union["Zone", None] = None
+        self.current_connection: Union["Connections", None] = None
         self.solved: bool = False
         self.index: int = 0
         self.path: list["Zone"]
@@ -34,7 +34,6 @@ class Drone:
         self.current_zone.take_from_zone(self)
         self.destination = destination
         if destination.type == ZoneType.restricted:
-
             self.stop = 1
         self.moving = True
         self.current_connection = connection
@@ -47,7 +46,7 @@ class Drone:
         returns:
             bool: True if succed, False if can't be moved
         """
-        if not self.moving:
+        if not self.moving or self.destination is None:
             return False
         self.current_zone = self.destination
         if self.current_connection is not None:

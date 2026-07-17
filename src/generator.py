@@ -1,11 +1,11 @@
-from typing import List
+from typing import Any, List, cast
 import sys
-from .parser import Parser, ParserError
+from .parser import Parser, ParserError, ZoneConfig, HubData
 from .models import Drone, Zone, Connections
 
 
 class Generator:
-    def __init__(self, parsed: "Parser"):
+    def __init__(self, parsed: "Parser") -> None:
         self.parser = parsed
         self.zones: List["Zone"] = []
         self.connections: List["Connections"] = []
@@ -22,7 +22,7 @@ class Generator:
             if len(connect) == 3:
                 for key, value in connect[2]:
                     if key == "max_link_capacity":
-                        max_link = value
+                        max_link = int(value)
                     elif key == "zone" and value == "blocked":
                         blocked = True
             connection = Connections(zone_1, zone_2, max_link, blocked)
@@ -34,6 +34,7 @@ class Generator:
         for zone in self.zones:
             if zone.name == name:
                 return zone
+        raise ParserError(f"The zone: {name} don't exist")
 
     def create_drone(self) -> None:
         for i in range(1, self.parser.nb_drones + 1):
@@ -50,11 +51,15 @@ class Generator:
             raise ParserError(
                 "We can't find the start"
             )
-        value: list
+        value: HubData
         for key, value in self.parser.hubs.items():
             if len(value) == 3:
                 value.append([("color", "PURPLE")])
             name, x, y, config = value
+            name = cast(str, name)
+            x = cast(int, x)
+            y = cast(int, y)
+            config = cast(ZoneConfig, config)
             if "end_hub" in key:
                 self.end = self.zone_control(name, x, y, config)
                 self.zones.append(self.end)
@@ -76,10 +81,10 @@ class Generator:
 
     def zone_control(
         self,
-        name,
-        x,
-        y,
-        config: list
+        name: str,
+        x: int,
+        y: int,
+        config: list[Any]
     ) -> "Zone":
         if len(config) == 1:
             if config[0][0] == "color":
@@ -97,7 +102,8 @@ class Generator:
                     name,
                     x=x,
                     y=y,
-                    type=zone_type
+                    type=zone_type,
+                    color="PURPLE"
                 )
                 return zone
             elif config[0][0] == "max_drones":
@@ -106,7 +112,8 @@ class Generator:
                     name,
                     x=x,
                     y=y,
-                    max_drones=max_drones
+                    max_drones=max_drones,
+                    color="PURPLE"
                 )
                 return zone
         elif len(config) == 2:
@@ -140,7 +147,8 @@ class Generator:
                     max_drones=max_drones,
                     x=x,
                     y=y,
-                    type=zone_type
+                    type=zone_type,
+                    color="PURPLE"
                 )
                 return zone
         elif len(config) == 3:
@@ -156,6 +164,9 @@ class Generator:
                 zone_type
             )
             return zone
+        raise ParserError(
+            f"Invalid zone config for '{name}': {config}"
+        )
 
 
 if __name__ == "__main__":

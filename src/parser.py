@@ -9,10 +9,9 @@ class ParserError(Exception):
 
 ConfigItem = tuple[str, Union[int, str]]
 ZoneConfigItem = tuple[str, Union[int, str]]
-ConnectionConfigItem = tuple[str, int]
 
 ZoneConfig = list[ZoneConfigItem]
-ConnectionConfig = list[ConnectionConfigItem]
+ConnectionConfig = ZoneConfig
 
 HubData = list[Union[str, int, ZoneConfig]]
 
@@ -67,7 +66,9 @@ class Parser:
             return output_list
         return []
 
-    def brackets_output(self, config: str, nb_line: int) -> Tuple:
+    def brackets_output(
+        self, config: str, nb_line: int
+    ) -> Tuple[str, Union[int, str]]:
         try:
             key, value = config.split("=", 1)
             value = value.strip()
@@ -164,20 +165,20 @@ class Parser:
                     "The values passed " +
                     f"don't follow the rules {nb_line}"
                 )
-            name, x, y = value.split(" ")
+            name, x_str, y_str = value.split(" ")
             name = name.strip()
             if "-" in name or " " in name:
                 raise ParserError(
                     f"Invalid zone name line:{nb_line}"
                 )
             try:
-                x = int(x)
-                y = int(y)
+                x = int(x_str)
+                y = int(y_str)
             except ValueError:
                 raise ParserError(
                     f"You passed Non-digit values on line {nb_line}"
                 )
-            temp_list = [
+            temp_list: HubData = [
                 name,
                 x,
                 y
@@ -195,14 +196,14 @@ class Parser:
                 raise ParserError(
                     f"Are missing values on line {nb_line}"
                 )
-            name, x, y = value.split(" ")
+            name, x_str, y_str = value.split(" ")
             if "-" in name or " " in name:
                 raise ParserError(
                     f"Invalid zone name line:{nb_line}"
                 )
             try:
-                x = int(x)
-                y = int(y)
+                x = int(x_str)
+                y = int(y_str)
             except ValueError:
                 raise ParserError(
                     f"You passed Non-digit values on line {nb_line}"
@@ -221,7 +222,7 @@ class Parser:
                 raise ParserError(
                     f"Are missing values on line {nb_line}"
                 )
-            name, x, y = value.split(" ")
+            name, x_str, y_str = value.split(" ")
             if name in self.hubs_names:
                 error = f"defined on line {nb_line}"
                 raise ParserError(
@@ -232,8 +233,8 @@ class Parser:
                     f"Invalid zone name line:{nb_line}"
                 )
             try:
-                x = int(x)
-                y = int(y)
+                x = int(x_str)
+                y = int(y_str)
             except ValueError:
                 raise ParserError(
                     f"You passed Non-digit values on line {nb_line}"
@@ -269,7 +270,7 @@ class Parser:
                     raise ParserError(
                         f"Invalid connections detected line:{nb_line}"
                     )
-                self.connections.append((zone_1, zone_2))
+                self.connections.append((zone_1, zone_2, []))
                 self.connections_name.append((zone_1, zone_2))
                 self.invalid_connections.append((zone_2, zone_1))
             except TypeError:
@@ -293,21 +294,21 @@ class Parser:
                 )
             value = value.strip()
             parts = value.split(" ", 3)
-            name, x, y, brackets = parts
+            name, x_str, y_str, brackets = parts
             name = name.strip()
             if "-" in name or " " in name:
                 raise ParserError(
                     f"Invalid zone name sline:{nb_line}"
                 )
             try:
-                x = int(x)
-                y = int(y)
+                x = int(x_str)
+                y = int(y_str)
             except ValueError:
                 raise ParserError(
                     f"You passed Non-digit values on line {nb_line}"
                 )
             temp_tuple = self.parse_brackets(brackets, nb_line)
-            temp_list = [
+            temp_list: HubData = [
                 name,
                 x,
                 y,
@@ -322,14 +323,14 @@ class Parser:
                 )
             value = value.strip()
             parts = value.split(" ", 3)
-            name, x, y, brackets = parts
+            name, x_str, y_str, brackets = parts
             if "-" in name or " " in name:
                 raise ParserError(
                     f"Invalid zone name line:{nb_line}"
                 )
             try:
-                x = int(x)
-                y = int(y)
+                x = int(x_str)
+                y = int(y_str)
             except ValueError:
                 raise ParserError(
                     f"You passed Non-digit values on line {nb_line}"
@@ -346,7 +347,7 @@ class Parser:
         elif "hub" in key:
             value = value.strip()
             parts = value.split(" ", 3)
-            name, x, y, brackets = parts
+            name, x_str, y_str, brackets = parts
             if name in self.hubs_names:
                 error = f"defined line:{nb_line}"
                 raise ParserError(
@@ -357,8 +358,8 @@ class Parser:
                     f"Invalid zone name line:{nb_line}"
                 )
             try:
-                x = int(x)
-                y = int(y)
+                x = int(x_str)
+                y = int(y_str)
             except ValueError:
                 raise ParserError(
                     f"You passed Non-digit values on line {nb_line}"

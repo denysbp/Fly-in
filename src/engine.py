@@ -11,7 +11,7 @@ class Pathfinder:
     def __init__(self, zones: List["Zone"]):
         self.zones: List["Zone"] = zones
 
-    def dijkstra(self, start: "Zone", end: "Zone"):
+    def dijkstra(self, start: "Zone", end: "Zone") -> List["Zone"]:
         distances = {node: float("inf") for node in self.zones}
         distances[start] = 0
         predecessors = {}

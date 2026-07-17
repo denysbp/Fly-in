@@ -33,7 +33,6 @@ def bench_mark() -> None:
         45,
         45
     ]
-    
 
     bench = {}
     for test in maps:

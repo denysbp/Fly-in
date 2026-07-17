@@ -1,7 +1,6 @@
 from os import environ
 from random import randint
-from pygame import Surface, Rect
-from typing import TYPE_CHECKING, List, Union
+from typing import List, Union
 from ..models import ZoneColor
 from .settings import (
     FPS, HEIGHT, WIDTH, Color, drone_2, back_ground,
@@ -9,10 +8,11 @@ from .settings import (
     FIT_SCALE_FACTOR, drone_1, drone_3, drone_4, drone_5, drone_6, drone_7,
     drone_8
 )
+from ..models import Drone, Connections, Zone
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 import pygame  # noqa: E402
-if TYPE_CHECKING:
-    from ..models import Drone, Connections, Zone
+from pygame import Surface, Rect  # noqa: E402
+from pygame.sprite import Group  # noqa: E402
 
 pygame.init()
 
@@ -21,9 +21,9 @@ class DroneSprite(pygame.sprite.Sprite):
     def __init__(
         self,
         id: int,
-        current_zone: "Zone",
-        destination: "Zone",
-        curr_connection: "Connections",
+        current_zone: Union[Zone | None],
+        destination: Union[Zone | None],
+        curr_connection: Union[Connections | None],
         moving: bool,
         solved: bool
     ):
@@ -65,10 +65,10 @@ class DroneSprite(pygame.sprite.Sprite):
         self.image = self.frames[0]
         self.rect: Rect = self.image.get_rect()
         self.id: int = id
-        self.current_zone: "Zone" = current_zone
+        self.current_zone: Union[Zone | None] = current_zone
         self.moving: bool = moving
-        self.destination: Union["Zone" | None] = destination
-        self.current_connection: Union["Connections" | None] = curr_connection
+        self.destination: Union[Zone | None] = destination
+        self.current_connection: Union[Connections | None] = curr_connection
         self.solved: bool = solved
         self.frame = 0
         self.frame_duration = 0
@@ -81,19 +81,19 @@ class DroneSprite(pygame.sprite.Sprite):
         curre_connection: "Connections",
         moving: bool,
         solved: bool,
-        x,
-        y
-    ):
-        self.id: int = id
-        self.current_zone: "Zone" = current_zone
-        self.moving: bool = moving
-        self.destination: Union["Zone" | None] = destination
-        self.current_connection: Union["Connections" | None] = curre_connection
-        self.solved: bool = solved
+        x: int,
+        y: int
+    ) -> None:
+        self.id = id
+        self.current_zone = current_zone
+        self.moving = moving
+        self.destination = destination
+        self.current_connection = curre_connection
+        self.solved = solved
         self.rect.center = (x, y)
         self.update_image()
 
-    def update_image(self):
+    def update_image(self) -> None:
         now = pygame.time.get_ticks()
 
         if now - self.frame_duration >= 25:
@@ -105,33 +105,31 @@ class DroneSprite(pygame.sprite.Sprite):
 class Render:
     def __init__(
         self,
-        zones: "Zone",
-        drones: "Drone",
-        connections: List["Connections"],
+        zones: List[Zone],
+        drones: List[Drone],
+        connections: List[Connections],
         turns_moves: List[List],
         out_put: List[str],
-        end,
+        end: Zone,
         grade: int
     ):
-        self.zones: List["Zone"] = zones
-        self.drones: List["Drone"] = drones
-        self.connections: List["Connections"] = connections
+        self.zones: List[Zone] = zones
+        self.drones: List[Drone] = drones
+        self.connections: List[Connections] = connections
         self.turns_moves: List[List[List]] = turns_moves
         self.out_put: List[str] = out_put
         self.turn: int = 0
         self.sprites: dict = {}
         self.color = Color()
-        self.end: "Zone" = end
+        self.end: Zone = end
         self.grade: int = grade
-        self.out_put: str = ""
-        self.previous = []
 
     def off_set(
         self,
         SCALE: int,
         viewport_width: int,
         viewport_height: int
-    ) -> tuple[int, int]:
+    ) -> tuple[int, int, int, int]:
         min_x, min_y, max_x, max_y = self.map_bounds()
 
         map_width = (max_x - min_x) * SCALE
@@ -219,12 +217,13 @@ class Render:
         return start + (end - start) * progress
 
     def update_turn(
-        self, SCALE: int,
+        self,
+        SCALE: int,
         viewport_width: int,
         viewport_height: int,
         progress: float = 0.0,
         get_back: int = 0
-    ):
+    ) -> None:
         offset_x, offset_y, min_x, min_y = self.off_set(
             SCALE, viewport_width, viewport_height
         )
@@ -239,7 +238,6 @@ class Render:
         previous_turn_by_id = {
             drone_info[0]: drone_info for drone_info in previous_turn
         }
-        previous = []
         for drone_info in current_turn:
             sprite = self.sprites[drone_info[0]]
             previous_drone_info = previous_turn_by_id.get(
@@ -285,7 +283,15 @@ class Render:
             if drone_info[5]:
                 screen_x = viewport_width + 100
                 screen_y = viewport_height + 100
-    def draw_text(self, surface: Surface, size, x, y, text):
+
+    def draw_text(
+        self,
+        surface: Surface,
+        size: int,
+        x: int,
+        y: int,
+        text: str
+    ) -> None:
         font_name = pygame.font.match_font("arial")
         font = pygame.font.Font(font_name, size)
         text_surface = font.render(text, True, self.color.WHITE)
@@ -293,7 +299,7 @@ class Render:
         text_rect.midtop = (x, y)
         surface.blit(text_surface, text_rect)
 
-    def show_stats(self, surface: Surface, pause: bool):
+    def show_stats(self, surface: Surface, pause: bool) -> None:
         width, height = pygame.display.get_window_size()
 
         panel_height = int(height * 0.2)
@@ -331,9 +337,9 @@ class Render:
 
         x1 = padding_x
         x2 = int(width * 0.15)
-        x3 = int(width * 0.28)
+        x3 = int(width * 0.25)
         x4 = int(width * 0.41)
-        x5 = int(width * 0.54)
+        x5 = int(width * 0.52)
         y = panel_y + 18
 
         title_font = pygame.font.SysFont("arial", title_size, bold=True)
@@ -381,8 +387,12 @@ class Render:
         )
 
         def draw_shortcut(
-                x, base_y, key_text, description, pause: bool = False
-        ):
+            x: int,
+            base_y: int,
+            key_text: str,
+            description: str,
+            pause: bool = False
+        ) -> None:
             if key_text == "SPACE" and pause:
                 key_color = self.color.GREEN
             elif key_text == "SPACE" and not pause:
@@ -422,19 +432,19 @@ class Render:
 
         draw_shortcut(x3, row_y, "E", "Toggle zone names")
         draw_shortcut(x3, row_y + line_spacing, "SPACE", "Pause", pause)
-        draw_shortcut(x4, row_y + line_spacing, "R", "RELOAD")
-        draw_shortcut(x4, row_y + line_spacing, "R", "RELOAD")
-        draw_shortcut(x4, row_y + line_spacing, "R", "RELOAD")
+        draw_shortcut(x4, row_y, "R", "RELOAD")
+        draw_shortcut(x4, row_y + line_spacing, "<", "PREV")
+        draw_shortcut(x5, row_y + line_spacing, ">", "NEXT")
 
     def draw_zone(
         self,
-        screen,
-        zone: "Zone",
-        viewport_width,
-        viewport_height,
-        SCALE,
-        show_zones
-    ):
+        screen: Surface,
+        zone: Zone,
+        viewport_width: int,
+        viewport_height: int,
+        SCALE: int,
+        show_zones: bool
+    ) -> None:
         offset_x, offset_y, min_x, min_y = self.off_set(
             SCALE,
             viewport_width,
@@ -549,7 +559,7 @@ class Render:
 
     def run(self) -> None:
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
-        sprites = pygame.sprite.Group()
+        sprites: Group = pygame.sprite.Group()
         for drone in self.drones:
             drone_sprite = DroneSprite(
                 drone.id,
@@ -577,7 +587,7 @@ class Render:
         PAUSE = False
         if self.turns_moves:
             self.update_turn(
-                base_scale * zoom,
+                int(base_scale * zoom),
                 viewport_width,
                 viewport_height,
                 0.0
@@ -662,9 +672,10 @@ class Render:
                         else:
                             PAUSE = False
                     elif event.key == pygame.K_RIGHT and not PAUSE:
-                        self.turn += 1 if self.turn < len(self.turns_moves) - 1 else 0
+                        self.turn += 1 if self.turn \
+                            < len(self.turns_moves) - 1 else 0
                     elif event.key == pygame.K_LEFT and not PAUSE:
-                        self.turn -= 1 if self.turn > 0 else 0 
+                        self.turn -= 1 if self.turn > 0 else 0
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0 and not PAUSE:
                         zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
@@ -689,7 +700,7 @@ class Render:
 
                     progress = turn_timer / TURN_DURATION_MS
                     self.update_turn(
-                        SCALE,
+                        int(SCALE),
                         viewport_width,
                         viewport_height,
                         progress
@@ -699,7 +710,7 @@ class Render:
                 zone1 = connection.zones[0]
                 zone2 = connection.zones[1]
                 offset_x, offset_y, min_x, min_y = self.off_set(
-                    SCALE,
+                    int(SCALE),
                     viewport_width,
                     viewport_height
                 )
@@ -721,7 +732,7 @@ class Render:
                     zone,
                     viewport_width,
                     viewport_height,
-                    SCALE,
+                    int(SCALE),
                     show_zones
                 )
             if show_stats:

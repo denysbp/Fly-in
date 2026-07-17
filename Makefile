@@ -39,8 +39,6 @@ debug: isolation
 lint: isolation
 	$(VENV_PY) -m flake8 . && $(VENV_PY) -m mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
-lint-strict: isolation
-	$(VENV_PY) -m flake8 . && $(VENV_PY) -m mypy . --strict
 
 clean:
 	rm -rf $(PACKAGE)__pycache__

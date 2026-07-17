@@ -2,7 +2,7 @@ from os import path
 
 
 class Color:
-    def __init__(self):
+    def __init__(self) -> None:
         self.WHITE = (255, 255, 255)
         self.RED = (235, 64, 52)
         self.BLUE = (15, 73, 219)
