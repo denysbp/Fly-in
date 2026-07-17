@@ -34,20 +34,36 @@ class Connections:
         return self.moving < self.max_link_capacity
 
     def moving_to_connection(self) -> bool:
+        """
+        Checks if the connection is available and decides whether or
+        not to allow the drone to pass.
+        """
         if not self.can_go():
             return False
         self.moving += 1
         return True
 
     def arrive(self) -> None:
+        """
+        This function reduces the number of drones passing through
+        the connection once they reach their destination.
+        """
         if self.moving > 0:
             self.moving -= 1
 
     def cross_connection(self, zone: "Zone") -> "Zone":
+        """
+        This function takes a zone and returns the corresponding coexistence
+        zone, determining the result based on whether the input is
+        zone 1 or zone 2.
+        """
         if not self.can_go():
             raise RuntimeError("Connection cannot move")
         self.moving_to_connection()
         return self.zones[1] if self.zones[0] == zone else self.zones[0]
 
     def connection_end(self, zone: "Zone") -> "Zone":
+        """
+        Return the connection end zone, depending on the position of the zone
+        """
         return self.zones[1] if self.zones[0] == zone else self.zones[0]

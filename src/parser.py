@@ -21,17 +21,23 @@ class Parser:
     Class to passing the maps
     """
     def __init__(self, map: str) -> None:
+        """
+        Initialize the Parser class
+        """
         self.map: str = map
         self.nb_drones: int = -1
-        # start_hub/end_hub/hub -> [name, x, y, config?]
         self.hubs: dict[str, HubData] = {}
-        # (zone_1, zone_2, connection_config)
         self.connections: list[tuple[str, str, ConnectionConfig]] = []
         self.hubs_names: list[str] = []
         self.connections_name: list[tuple[str, str]] = []
         self.invalid_connections: list[tuple[str, str]] = []
 
     def parse_brackets(self, brackets: str, nb_line: int) -> ZoneConfig:
+        """
+        This function is responsible for determining
+        the number of configurations and performing the correct processing
+        taking the organization order into account.
+        """
         brackets = brackets.removeprefix("[")
         brackets = brackets.removesuffix("]")
         plus_time = 0
@@ -69,6 +75,9 @@ class Parser:
     def brackets_output(
         self, config: str, nb_line: int
     ) -> Tuple[str, Union[int, str]]:
+        """
+        This function is responsible for processing the configurations
+        """
         try:
             key, value = config.split("=", 1)
             value = value.strip()
@@ -119,11 +128,11 @@ class Parser:
                     "priority"
                 ]
                 for type in types:
-                    if value not in types:
+                    if value.lower() not in types:
                         raise ParserError(
                             f"Invalid '{value}' for zone type line:{nb_line}"
                         )
-                return (key, value)
+                return (key, value.lower())
 
             elif "max_link_capacity" in key:
                 if not value.isdigit():
@@ -142,6 +151,14 @@ class Parser:
             sys.exit(1)
 
     def parse_line_config(self, line: str, nb_line: int) -> None:
+        """
+        Parse and validate a configuration line.
+
+        Process a single line from the configuration file, updating
+        the parser data structures with hubs, connections or the
+        number of drones. Raise a ParserError when the line does not
+        follow the expected format or contains invalid data.
+        """
         key, value = line.split(":", 1)
         key = key.strip()
         if "nb_drones" in key:
@@ -285,6 +302,14 @@ class Parser:
             )
 
     def parse_line_multi_config(self, line: str, nb_line: int) -> None:
+        """
+        Parse an extended configuration line.
+
+        Validate and process hubs and connections with optional
+        configuration values enclosed in brackets, updating the
+        parser data structures. Raise a ParserError when the input
+        does not follow the expected format.
+        """
         key, value = line.split(":", 1)
         key = key.strip()
         if "start_hub" in key:
@@ -419,6 +444,11 @@ class Parser:
             )
 
     def parse_line(self, line: str, nb_line: int) -> None:
+        """
+        This function is responsible for controlling the flow of each
+        line by determining whether it contains configuration settings or not,
+        and then redirecting it to the appropriate function.
+        """
         valid_brackets = 0
         row = 0
         try:
@@ -451,10 +481,8 @@ class Parser:
 
     def parsing(self) -> None:
         """
-        Used to parse a map config in to code
-
-        returns:
-            None
+        This is the main function of parsing, responsible for opening the map
+        file and checking for invalid lines.
         """
         try:
             with open(self.map) as f:

@@ -8,13 +8,26 @@ import sys
 
 
 class Pathfinder:
+    """
+    Pathfinder class
+    """
     def __init__(self, zones: List["Zone"]):
+        """
+        Initialize the Pathfinder class
+        """
         self.zones: List["Zone"] = zones
 
     def dijkstra(self, start: "Zone", end: "Zone") -> List["Zone"]:
+        """
+        Find the lowest-cost path between two zones using Dijkstra's algorithm.
+
+        Compute the optimal route while avoiding blocked zones and connections,
+        considering zone traversal costs, capacity constraints
+        and priority zones.
+        Return the ordered list of zones from the start to the destination.
+        """
         distances = {node: float("inf") for node in self.zones}
         distances[start] = 0
-        predecessors = {}
         counter = 0
         predecessors = {zone: None for zone in self.zones}
 

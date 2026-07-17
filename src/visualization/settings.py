@@ -3,6 +3,9 @@ from os import path
 
 class Color:
     def __init__(self) -> None:
+        """
+        Color base class
+        """
         self.WHITE = (255, 255, 255)
         self.RED = (235, 64, 52)
         self.BLUE = (15, 73, 219)

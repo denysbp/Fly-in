@@ -5,7 +5,19 @@ from .models import Drone, Zone, Connections
 
 
 class Generator:
+    """
+    Build the simulation objects from the parsed configuration.
+
+    Create zones, connections and drones using the data produced
+    by the parser.
+    """
     def __init__(self, parsed: "Parser") -> None:
+        """
+        Initialize the simulation generator.
+
+        Store the parsed configuration and prepare the collections
+        used to build the simulation objects.
+        """
         self.parser = parsed
         self.zones: List["Zone"] = []
         self.connections: List["Connections"] = []
@@ -14,6 +26,12 @@ class Generator:
         self.end: "Zone"
 
     def create_connections(self) -> None:
+        """
+        Create all connections between zones.
+
+        Build the connections defined in the parsed configuration and
+        attach them to their corresponding zones.
+        """
         for connect in self.parser.connections:
             zone_1 = self.find_target(connect[0])
             zone_2 = self.find_target(connect[1])
@@ -31,18 +49,36 @@ class Generator:
             self.connections.append(connection)
 
     def find_target(self, name: str) -> Zone:
+        """
+        Find a zone by its name.
+
+        Return the zone matching the given name or raise a
+        ParserError if it does not exist.
+        """
         for zone in self.zones:
             if zone.name == name:
                 return zone
         raise ParserError(f"The zone: {name} don't exist")
 
     def create_drone(self) -> None:
+        """
+        Create the simulation drones.
+
+        Instantiate all drones at the start hub and place them in the
+        initial zone.
+        """
         for i in range(1, self.parser.nb_drones + 1):
             drone = Drone(self.start, i)
             drone.current_zone.move_to_zone(drone)
             self.drones.append(drone)
 
     def create_zone(self) -> None:
+        """
+        Create all zones from the parsed configuration.
+
+        Instantiate every zone, identify the start and end hubs and
+        apply their configured properties.
+        """
         if "end_hub" not in self.parser.hubs.keys():
             raise ParserError(
                 "We can't find the end_hub"
@@ -75,6 +111,11 @@ class Generator:
             self.zones.append(self.zone_control(name, x, y, config))
 
     def invalide_hub(self) -> bool:
+        """
+        Check whether the start and end hubs overlap.
+
+        Return True if both hubs share the same coordinates.
+        """
         if (self.start.x, self.start.y) == (self.end.x, self.end.y):
             return True
         return False
@@ -86,6 +127,12 @@ class Generator:
         y: int,
         config: list[Any]
     ) -> "Zone":
+        """
+        Create a zone from its configuration.
+
+        Instantiate a zone using its name, coordinates and optional
+        configuration values such as color, type and capacity.
+        """
         if len(config) == 1:
             if config[0][0] == "color":
                 color = config[0][1]

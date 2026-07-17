@@ -40,6 +40,12 @@ class ZoneColor(Enum):
 
 
 class Zone:
+    """
+    Represent a zone in the drone network.
+
+    A zone stores its position, type, capacity, connected zones
+    and the drones currently occupying it.
+    """
     def __init__(
         self,
         name: str,
@@ -50,18 +56,10 @@ class Zone:
         type: ZoneType = ZoneType.normal,
     ):
         """
+        Initialize a zone.
 
-        Args:
-            name: Zone name
-            color: Zone Display color
-            max_capacity: Limit the amount the drone for this zone
-            occupation: The amount off drones in the zone
-            current_drones: The drones on the zone
-            type: Type off the zone
-            connections: The Zone neighbors
-            x: X coordinate
-            y: Y coordinate
-
+        Create a zone with its name, position, color, type and
+        maximum drone capacity.
         """
         types = {
             "normal": ZoneType.normal,
@@ -105,19 +103,19 @@ class Zone:
 
     def zone_cost(self) -> int:
         """
-        Check the movement cost for this zone
+        Return the traversal cost of the zone.
 
-        returns:
-            int: The cost for movement
+        Restricted zones have a higher movement cost than normal
+        zones.
         """
         return 1 if self.type.value != "restricted" else 2
 
     def move_to_zone(self, drone: "Drone") -> bool:
         """
-        Adds the new drone to the zone.
+        Move a drone into the zone.
 
-        returns:
-            bool: if the movement succed
+        Add the drone if the zone has available capacity and the
+        drone is not already present.
         """
         if drone in self.current_drones:
             return False
@@ -129,11 +127,10 @@ class Zone:
 
     def take_from_zone(self, drone: "Drone") -> bool:
         """
-        See if its possible to add the drone to the zone
+        Remove a drone from the zone.
 
-        returns:
-            bool: if the movement succed
-       """
+        Remove the drone if it is currently occupying the zone.
+        """
         if drone not in self.current_drones:
             return False
 
@@ -142,10 +139,21 @@ class Zone:
         return True
 
     def find_connection(self, zone: "Zone") -> Optional["Connections"]:
+        """
+        Find the connection to another zone.
+
+        Return the connection linking this zone to the specified
+        neighbor, or None if no connection exists.
+        """
         for connection in self.connections:
             if zone in connection.zones:
                 return connection
         return None
 
     def has_space(self) -> bool:
+        """
+        Check whether the zone has available capacity.
+
+        Return True if another drone can enter the zone.
+        """
         return self.occupation < self.max_capacity
