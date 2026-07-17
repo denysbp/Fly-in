@@ -18,6 +18,9 @@ pygame.init()
 
 
 class DroneSprite(pygame.sprite.Sprite):
+    """
+    Represent a Drone sprite
+    """
     def __init__(
         self,
         id: int,
@@ -27,6 +30,17 @@ class DroneSprite(pygame.sprite.Sprite):
         moving: bool,
         solved: bool
     ):
+        """
+        Initializes a drone sprite.
+
+        Args:
+            id: represent the drone id
+            current_zone: the current zone of the drone
+            destination: the drone destiantion
+            curr_connection: the drone current connection
+            moving: if drone are flying
+            solved: if the drone arrive the end zone
+        """
         pygame.sprite.Sprite.__init__(self)
         self.frames = [
             pygame.transform.scale(
@@ -84,6 +98,9 @@ class DroneSprite(pygame.sprite.Sprite):
         x: int,
         y: int
     ) -> None:
+        """
+        Update the drone information for each turn
+        """
         self.id = id
         self.current_zone = current_zone
         self.moving = moving
@@ -94,6 +111,9 @@ class DroneSprite(pygame.sprite.Sprite):
         self.update_image()
 
     def update_image(self) -> None:
+        """
+        Update drone image frame by frame
+        """
         now = pygame.time.get_ticks()
 
         if now - self.frame_duration >= 25:
@@ -103,21 +123,36 @@ class DroneSprite(pygame.sprite.Sprite):
 
 
 class Render:
+    """
+    Represent the render engine
+    """
     def __init__(
         self,
         zones: List[Zone],
         drones: List[Drone],
         connections: List[Connections],
         turns_moves: List[List],
-        out_put: List[str],
         end: Zone,
         grade: int
     ):
+        """
+        Initialize the Render class
+
+        Args:
+            zones: list of all zones
+            drones: list of all drones
+            connections: list of all connection
+            turns_moves: list of drones snapshot
+            turn: represent the current turn
+            sprites: a dict with all drones sprites
+            color: color class
+            end: the end zone
+            grade: the amount of turns
+        """
         self.zones: List[Zone] = zones
         self.drones: List[Drone] = drones
         self.connections: List[Connections] = connections
         self.turns_moves: List[List[List]] = turns_moves
-        self.out_put: List[str] = out_put
         self.turn: int = 0
         self.sprites: dict = {}
         self.color = Color()
@@ -130,6 +165,22 @@ class Render:
         viewport_width: int,
         viewport_height: int
     ) -> tuple[int, int, int, int]:
+        """
+        Calculates the displacement required
+        to draw the map centered in the window.
+
+        Args:
+            SCALE: How many pixels is each map unit worth?
+            viewport_width: window width
+            viewport_height: window height
+
+        Return:
+            offset_x: the amount of displacement for each x
+            offset_y: the amount of displacement for each y
+            min_x: the smallest value of x
+            min_y: the smallest value of y
+
+        """
         min_x, min_y, max_x, max_y = self.map_bounds()
 
         map_width = (max_x - min_x) * SCALE
@@ -140,9 +191,22 @@ class Render:
         return offset_x, offset_y, min_x, min_y
 
     def fit_scale(
-        self, viewport_width: int,
+        self,
+        viewport_width: int,
         viewport_height: int
     ) -> float:
+        """
+        Calculates the ideal scale so that the map fits within the window
+        leaving a margin.
+
+        Args:
+            viewport_width: the window width
+            viewport_height: the window height
+
+        Return:
+            It returns how many pixels each map unit should represent so that
+            the map fits entirely within the window, applying a margin.
+        """
         min_x, min_y, max_x, max_y = self.map_bounds()
 
         span_x = max(1, max_x - min_x)
@@ -156,6 +220,11 @@ class Render:
         ) * FIT_SCALE_FACTOR
 
     def map_bounds(self) -> tuple[int, int, int, int]:
+        """
+        Return the map boundaries.
+
+        Return the minimum and maximum x and y coordinates of all zones.
+        """
         min_x = min(zone.x for zone in self.zones)
         min_y = min(zone.y for zone in self.zones)
         max_x = max(zone.x for zone in self.zones)
@@ -172,7 +241,10 @@ class Render:
         min_y: int,
     ) -> tuple[float, float]:
         """
-        world coordinates -> screen coordinates
+        Convert a zone position from map coordinates to screen coordinates.
+
+        Apply the map scale and offsets to obtain the position where the
+        zone should be drawn on the screen.
         """
         screen_x = offset_x + (zone.x - min_x) * SCALE
         screen_y = offset_y + (zone.y - min_y) * SCALE
@@ -188,9 +260,14 @@ class Render:
         min_y: int,
     ) -> tuple[float, float]:
         """
-        Where should I draw this drone this turn?
+        Return the screen position of a drone.
+
+        Use the destination zone when the drone is moving; otherwise,
+        use its current zone and convert the position to screen
+        coordinates.
         """
         if drone_info[4] and drone_info[2] is not None:
+            #  movind and destination is not None
             zone = drone_info[2]
             return self.zone_screen_position(
                 zone, SCALE, offset_x, offset_y, min_x, min_y)
@@ -200,19 +277,25 @@ class Render:
             zone, SCALE, offset_x, offset_y, min_x, min_y)
 
     def apply_drone_offset(
-        self, drone_id: int,
+        self,
+        drone_id: int,
         screen_x: float,
         screen_y: float
     ) -> tuple[float, float]:
         """
-        Drones hovering over other
+        Apply a horizontal offset to a drone position.
+
+        Prevent drones in the same zone from overlapping when drawn.
         """
         screen_x += ((drone_id - 1) % 3) * 14 - 14
         return screen_x, screen_y
 
     def lerp(self, start: float, end: float, progress: float) -> float:
         """
-        Linear Interpolation
+        Return the interpolated value between two points.
+
+        Compute a value between the start and end positions based on
+        the given progress.
         """
         return start + (end - start) * progress
 
@@ -222,8 +305,14 @@ class Render:
         viewport_width: int,
         viewport_height: int,
         progress: float = 0.0,
-        get_back: int = 0
     ) -> None:
+        """
+        Update all drone sprites for the current turn.
+
+        Interpolate drone positions between the previous and current
+        turn based on the animation progress, then update each sprite
+        with its new screen position and state.
+        """
         offset_x, offset_y, min_x, min_y = self.off_set(
             SCALE, viewport_width, viewport_height
         )
@@ -292,6 +381,12 @@ class Render:
         y: int,
         text: str
     ) -> None:
+        """
+        Draw text on the given surface.
+
+        Render the text using the specified font size and draw it
+        centered at the given screen position.
+        """
         font_name = pygame.font.match_font("arial")
         font = pygame.font.Font(font_name, size)
         text_surface = font.render(text, True, self.color.WHITE)
@@ -300,6 +395,12 @@ class Render:
         surface.blit(text_surface, text_rect)
 
     def show_stats(self, surface: Surface, pause: bool) -> None:
+        """
+        Draw the simulation statistics panel.
+
+        Render the simulation information, current turn count and
+        keyboard shortcuts, updating the pause indicator when needed.
+        """
         width, height = pygame.display.get_window_size()
 
         panel_height = int(height * 0.2)
@@ -374,7 +475,8 @@ class Render:
         pygame.draw.rect(
             surface,
             (90, 90, 110),
-            badge, width=1,
+            badge,
+            width=1,
             border_radius=16
         )
         surface.blit(
@@ -393,6 +495,12 @@ class Render:
             description: str,
             pause: bool = False
         ) -> None:
+            """
+            Draw a keyboard shortcut.
+
+            Render a key label inside a rounded box and display its
+            description beside it.
+            """
             if key_text == "SPACE" and pause:
                 key_color = self.color.GREEN
             elif key_text == "SPACE" and not pause:
@@ -404,7 +512,8 @@ class Render:
                 description, True, self.color.WHITE
             )
             key_box = pygame.Rect(
-                x, base_y,
+                x,
+                base_y,
                 key_surface.get_width() + 24,
                 small_size + 18
             )
@@ -417,7 +526,8 @@ class Render:
             pygame.draw.rect(
                 surface,
                 (255, 255, 255, 28),
-                key_box, width=1,
+                key_box,
+                width=1,
                 border_radius=12
             )
             surface.blit(key_surface, (key_box.x + 12, key_box.y + 8))
@@ -445,6 +555,12 @@ class Render:
         SCALE: int,
         show_zones: bool
     ) -> None:
+        """
+        Draw a map zone.
+
+        Render the zone with its visual appearance, including special
+        effects for rainbow zones, and optionally draw its name.
+        """
         offset_x, offset_y, min_x, min_y = self.off_set(
             SCALE,
             viewport_width,
@@ -558,6 +674,12 @@ class Render:
             )
 
     def run(self) -> None:
+        """
+        Run the simulation visualizer.
+
+        Handle events, update the simulation state and render each
+        frame until the application is closed.
+        """
         screen = pygame.display.set_mode((WIDTH, HEIGHT), pygame.RESIZABLE)
         sprites: Group = pygame.sprite.Group()
         for drone in self.drones:

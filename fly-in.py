@@ -37,7 +37,6 @@ def main() -> None:
                 generator.drones,
                 generator.connections,
                 engine.turn_moves,
-                engine.out_put,
                 generator.end,
                 engine.turns
                 )
