@@ -276,6 +276,7 @@ class Render:
         self.fonts: dict[int, pygame.font.Font] = {}
         self.explosion_sprite: Group = pygame.sprite.Group()
         self.mobs: Group = pygame.sprite.Group()
+        self.frame: int = 100
 
     def off_set(
         self,
@@ -488,7 +489,7 @@ class Render:
                 round(screen_y + 10)
             )
 
-    def get_font(self, size: int) -> pygame.font.Font:
+    def get_font(self, size: int, font: str) -> pygame.font.Font:
         """
         Return a cached font with the requested size.
 
@@ -502,7 +503,7 @@ class Render:
             A ``pygame.font.Font`` object with the requested size.
         """
         if size not in self.fonts:
-            self.fonts[size] = pygame.font.SysFont("arial", size)
+            self.fonts[size] = pygame.font.SysFont(font, size)
         return self.fonts[size]
 
     def draw_text(
@@ -511,7 +512,9 @@ class Render:
         size: int,
         x: int,
         y: int,
-        text: str
+        text: str,
+        color: Color = (255, 255, 255),
+        font: str = "arial"
     ) -> None:
         """
         Draw text on the given surface.
@@ -519,13 +522,13 @@ class Render:
         Render the text using the specified font size and draw it
         centered at the given screen position.
         """
-        font = self.get_font(size)
-        text_surface = font.render(text, True, self.color.WHITE)
+        font = self.get_font(size, font)
+        text_surface = font.render(text, True, color)
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x, y)
         surface.blit(text_surface, text_rect)
 
-    def show_stats(self, surface: Surface, pause: bool) -> None:
+    def show_stats(self, surface: Surface, pause: bool, KABOOM: bool) -> None:
         """
         Draw the simulation statistics panel.
 
@@ -572,6 +575,7 @@ class Render:
         x3 = int(width * 0.25)
         x4 = int(width * 0.41)
         x5 = int(width * 0.52)
+        x6 = int(width * 0.62)
         y = panel_y + 18
 
         title_font = pygame.font.SysFont("arial", title_size, bold=True)
@@ -677,6 +681,7 @@ class Render:
         draw_shortcut(x4, row_y + line_spacing, "<", "PREV")
         draw_shortcut(x5, row_y + line_spacing, ">", "NEXT")
         draw_shortcut(x5, row_y, "W", "Show type")
+        draw_shortcut(x6, row_y, "K", "KABOOM")
 
     def draw_zone(
         self,
@@ -822,7 +827,7 @@ class Render:
                 types[card]
             )
 
-    def kill_drone(self, screen_x: int, screen_y: int) -> None:
+    def kill_drone(self, screen_x: int, screen_y: int) -> int:
         """
         This function pick a drone by is positions on the sprite and kill it
         """
@@ -833,7 +838,8 @@ class Render:
                 drone.kill()
                 expl = Explosion((screen_x, screen_y), size='lg')
                 self.explosion_sprite.add(expl)
-                break
+                return 1
+        return 0
 
     def create_mobs(self, amount: int) -> None:
         """
@@ -844,6 +850,22 @@ class Render:
             m = Mob()
             self.mobs.add(m)
             self.mobs.add(m)
+
+    def over_game(self, screen: Surface, OVER: bool, killed: int) -> None:
+        if len(self.sprites) == killed:
+            OVER = True
+        if OVER:
+            x = WIDTH // 2 + 100
+            y = HEIGHT // 2
+            self.draw_text(
+                screen,
+                90,
+                x,
+                y,
+                "ALL DRONES ARE DIED",
+                self.color.RED,
+                "Raleway Bold"
+            )
 
     def run(self) -> None:
         """
@@ -882,6 +904,9 @@ class Render:
         kill = False
         PASS = False
         PAUSE = False
+        KABOOM = False
+        ABORT = False
+        killed = 0
         if self.turns_moves:
             self.update_turn(
                 int(base_scale * zoom),
@@ -980,8 +1005,9 @@ class Render:
                             show_type = False
                         else:
                             show_type = True
-                    elif event.key == pygame.K_k:
+                    elif event.key == pygame.K_k and not PAUSE:
                         kill = True
+                        KABOOM = True
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0 and not PAUSE:
                         zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
@@ -1049,13 +1075,15 @@ class Render:
             self.explosion_sprite.update()
             self.explosion_sprite.draw(screen)
             if show_stats:
-                self.show_stats(screen, PAUSE)
-            elif kill:
+                self.show_stats(screen, PAUSE, KABOOM)
+            if kill and not PAUSE:
                 end = self.end
                 screen_x = offset_x + (end.x - min_x) * SCALE
                 screen_y = offset_y + (end.y - min_y) * SCALE
-                self.kill_drone(int(screen_x), int(screen_y))
+                killed += self.kill_drone(int(screen_x), int(screen_y))
                 kill = False
+            if killed:
+                self.over_game(screen, ABORT, killed)
             sprites.draw(screen)
             pygame.display.flip()
 
