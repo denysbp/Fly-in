@@ -34,6 +34,7 @@ FIT_SCALE_FACTOR = 0.78
 
 
 img_dir = path.join(path.dirname(__file__), 'img')
+damage_dir = path.join(path.dirname(__file__), 'Damage')
 drone_1 = path.join(img_dir, "drone1.png")
 drone_2 = path.join(img_dir, "drone2.png")
 drone_3 = path.join(img_dir, "drone2.png")

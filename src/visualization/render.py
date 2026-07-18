@@ -1,12 +1,12 @@
-from os import environ
-from random import randint
-from typing import List, Union
+from os import environ, path
+from random import randint, randrange, choice
+from typing import List, Union, Any
 from ..models import ZoneColor
 from .settings import (
     FPS, HEIGHT, WIDTH, Color, drone_2, back_ground,
     TURN_DURATION_MS, ZOOM_STEP, MIN_ZOOM, MAX_ZOOM, DEFAULT_ZOOM, FIT_MARGIN,
     FIT_SCALE_FACTOR, drone_1, drone_3, drone_4, drone_5, drone_6, drone_7,
-    drone_8
+    drone_8, damage_dir, img_dir
 )
 from ..models import Drone, Connections, Zone
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
@@ -109,6 +109,9 @@ class DroneSprite(pygame.sprite.Sprite):
         self.solved = solved
         self.rect.center = (x, y)
         self.update_image()
+        # if self.solved:
+        #     self.kill()
+        # else:
 
     def update_image(self) -> None:
         """
@@ -120,6 +123,118 @@ class DroneSprite(pygame.sprite.Sprite):
             self.frame_duration = now
             self.frame = (self.frame + 1) % len(self.frames)
             self.image = self.frames[self.frame]
+
+
+class Explosion(pygame.sprite.Sprite):
+    """
+    Explosion class
+    """
+    def __init__(self, center: tuple[int, int], size: str) -> None:
+        """
+        Initialize the Explosion class
+        """
+        pygame.sprite.Sprite.__init__(self)
+        self.size: str = size
+        self.expl_anim: dict[Any, Any] = {}
+        self.expl_anim['lg'] = []
+        self.expl_anim['sm'] = []
+        for i in range(9):
+            file_name = f"regularExplosion0{i}.png"
+            img = pygame.image.load(path.join(damage_dir, file_name)).convert()
+            img.set_colorkey((0, 0, 0))
+            img_lg = pygame.transform.scale(img, (75, 75))
+            self.expl_anim["lg"].append(img_lg)
+            img_sm = pygame.transform.scale(img, (32, 32))
+            self.expl_anim["sm"].append(img_sm)
+
+        self.image: Surface = self.expl_anim[self.size][0]
+        self.rect: Rect = self.image.get_rect()
+        self.rect.center = center
+        self.frame: int = 0
+        self.last_update: int = pygame.time.get_ticks()
+        self.frame_rate: int = 75
+
+    def update(self) -> None:
+        """
+        Update the Explosion frame by frame and kill the sprite
+        after the last image
+        """
+        now = pygame.time.get_ticks()
+        if now - self.last_update > self.frame_rate:
+            self.last_update = now
+            self.frame += 1
+            if self.frame == len(self.expl_anim[self.size]):
+                self.kill()
+            else:
+                center = self.rect.center
+                self.image = self.expl_anim[self.size][self.frame]
+                self.rect = self.image.get_rect()
+                self.rect.center = center
+
+
+class Mob(pygame.sprite.Sprite):
+    """
+    Represent a Mob class
+    """
+    def __init__(self) -> None:
+        """
+        Initialize the Mob sprite
+        """
+        pygame.sprite.Sprite.__init__(self)
+        mob_img: dict[str, Surface] = {}
+        mob_img["meteorBrown_med3"] = pygame.image.load(
+            path.join(img_dir, "meteorBrown_med3.png")).convert()
+        mob_img["meteorBrown_small1"] = pygame.image.load(
+            path.join(img_dir, "meteorBrown_small1.png")).convert()
+        mob_img["meteorBrown_small2"] = pygame.image.load(
+            path.join(img_dir, "meteorBrown_small2.png")).convert()
+        mob_img["meteorBrown_tiny1"] = pygame.image.load(
+            path.join(img_dir, "meteorBrown_tiny1.png")).convert()
+        self.image_orig: Surface = choice([
+            mob_img["meteorBrown_med3"],
+            mob_img["meteorBrown_small1"],
+            mob_img["meteorBrown_tiny1"],
+            mob_img["meteorBrown_small2"]
+        ])
+        self.image_orig.set_colorkey((0, 0, 0))
+        self.image: Surface = self.image_orig.copy()
+        self.rect: Rect = self.image.get_rect()
+        self.radius: int = int(self.rect.width * 0.9 / 2)
+        self.rect.x = randrange(WIDTH - self.rect.width)
+        self.rect.y = randrange(-100, -40)
+        self.speedy = randrange(1, 8)
+        self.speedx = randrange(-3, 3)
+        self.rot = 0
+        self.rot_speed: int = randrange(-8, 8)
+        self.last_update: int = pygame.time.get_ticks()
+
+    def rotate(self) -> None:
+        """
+        Rotate the mob object based on the golden ratio
+        """
+        now = pygame.time.get_ticks()
+        if now - self.last_update > 50:
+            self.last_update = now
+            self.rot = (self.rot + self.rot_speed) % 360
+            new_image = pygame.transform.rotate(self.image_orig, self.rot)
+            old_center = self.rect.center
+            self.image = new_image
+            self.rect = self.image.get_rect()
+            self.rect.center = old_center
+
+    def update(self) -> None:
+        """
+        Update the mob object if it pass the screen limit
+        starting on the top of screen again
+        """
+        self.rotate()
+        self.rect.x += self.speedx
+        self.rect.y += self.speedy
+        if self.rect.top > HEIGHT + 10 or self.rect.left < -25 \
+                or self.rect.right > WIDTH + 20:
+            self.rect.x = randrange(WIDTH - self.rect.width)
+            self.rect.y = randrange(-100, -40)
+            self.speedy = randrange(1, 8)
 
 
 class Render:
@@ -154,10 +269,13 @@ class Render:
         self.connections: List[Connections] = connections
         self.turns_moves: List[List[List]] = turns_moves
         self.turn: int = 0
-        self.sprites: dict = {}
+        self.sprites: dict[int, DroneSprite] = {}
         self.color = Color()
         self.end: Zone = end
         self.grade: int = grade
+        self.fonts: dict[int, pygame.font.Font] = {}
+        self.explosion_sprite: Group = pygame.sprite.Group()
+        self.mobs: Group = pygame.sprite.Group()
 
     def off_set(
         self,
@@ -369,9 +487,23 @@ class Render:
                 round(screen_x),
                 round(screen_y + 10)
             )
-            if drone_info[5]:
-                screen_x = viewport_width + 100
-                screen_y = viewport_height + 100
+
+    def get_font(self, size: int) -> pygame.font.Font:
+        """
+        Return a cached font with the requested size.
+
+        If a font with the given size has not been created yet, it is
+        created, stored in the cache, and then returned.
+
+        Args:
+            size: Font size in pixels.
+
+        Returns:
+            A ``pygame.font.Font`` object with the requested size.
+        """
+        if size not in self.fonts:
+            self.fonts[size] = pygame.font.SysFont("arial", size)
+        return self.fonts[size]
 
     def draw_text(
         self,
@@ -387,8 +519,7 @@ class Render:
         Render the text using the specified font size and draw it
         centered at the given screen position.
         """
-        font_name = pygame.font.match_font("arial")
-        font = pygame.font.Font(font_name, size)
+        font = self.get_font(size)
         text_surface = font.render(text, True, self.color.WHITE)
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x, y)
@@ -545,6 +676,7 @@ class Render:
         draw_shortcut(x4, row_y, "R", "RELOAD")
         draw_shortcut(x4, row_y + line_spacing, "<", "PREV")
         draw_shortcut(x5, row_y + line_spacing, ">", "NEXT")
+        draw_shortcut(x5, row_y, "W", "Show type")
 
     def draw_zone(
         self,
@@ -553,7 +685,8 @@ class Render:
         viewport_width: int,
         viewport_height: int,
         SCALE: int,
-        show_zones: bool
+        show_zones: bool,
+        show_type: bool
     ) -> None:
         """
         Draw a map zone.
@@ -673,6 +806,45 @@ class Render:
                 zone.name
             )
 
+        if show_type:
+            types: dict = {
+                "restricted": "R",
+                "blocked":  "X",
+                "priority": "P",
+                "normal": "N"
+            }
+
+            card = zone.type.value
+            self.draw_text(
+                screen, 20,
+                screen_x + 12,
+                screen_y - 40,
+                types[card]
+            )
+
+    def kill_drone(self, screen_x: int, screen_y: int) -> None:
+        """
+        This function pick a drone by is positions on the sprite and kill it
+        """
+        for drone in self.sprites.values():
+            if not drone.alive():
+                continue
+            if drone.current_zone == self.end:
+                drone.kill()
+                expl = Explosion((screen_x, screen_y), size='lg')
+                self.explosion_sprite.add(expl)
+                break
+
+    def create_mobs(self, amount: int) -> None:
+        """
+        This function create a amount of mobs and add it to
+        screen
+        """
+        for i in range(amount):
+            m = Mob()
+            self.mobs.add(m)
+            self.mobs.add(m)
+
     def run(self) -> None:
         """
         Run the simulation visualizer.
@@ -706,6 +878,9 @@ class Render:
         back_rect = img_back_ground.get_rect()
         show_zones = False
         show_stats = False
+        show_type = False
+        kill = False
+        PASS = False
         PAUSE = False
         if self.turns_moves:
             self.update_turn(
@@ -714,6 +889,7 @@ class Render:
                 viewport_height,
                 0.0
             )
+        self.create_mobs(15)
         while running:
             dt = clock.tick(FPS)
             if not PAUSE:
@@ -798,6 +974,14 @@ class Render:
                             < len(self.turns_moves) - 1 else 0
                     elif event.key == pygame.K_LEFT and not PAUSE:
                         self.turn -= 1 if self.turn > 0 else 0
+                        PASS = True
+                    elif event.key == pygame.K_w:
+                        if show_type:
+                            show_type = False
+                        else:
+                            show_type = True
+                    elif event.key == pygame.K_k:
+                        kill = True
                 if event.type == pygame.MOUSEWHEEL:
                     if event.y > 0 and not PAUSE:
                         zoom = max(MIN_ZOOM, zoom / ZOOM_STEP)
@@ -815,10 +999,13 @@ class Render:
                 )
                 SCALE = base_scale * zoom
                 if self.turns_moves:
-                    while turn_timer >= TURN_DURATION_MS and \
-                            self.turn < len(self.turns_moves) - 1:
-                        turn_timer -= TURN_DURATION_MS
-                        self.turn += 1
+                    if PASS:
+                        PASS = False
+                    else:
+                        while turn_timer >= TURN_DURATION_MS and \
+                                self.turn < len(self.turns_moves) - 1:
+                            turn_timer -= TURN_DURATION_MS
+                            self.turn += 1
 
                     progress = turn_timer / TURN_DURATION_MS
                     self.update_turn(
@@ -827,7 +1014,8 @@ class Render:
                         viewport_height,
                         progress
                     )
-
+            self.mobs.draw(screen)
+            self.mobs.update()
             for connection in self.connections:
                 zone1 = connection.zones[0]
                 zone2 = connection.zones[1]
@@ -855,10 +1043,19 @@ class Render:
                     viewport_width,
                     viewport_height,
                     int(SCALE),
-                    show_zones
+                    show_zones,
+                    show_type
                 )
+            self.explosion_sprite.update()
+            self.explosion_sprite.draw(screen)
             if show_stats:
                 self.show_stats(screen, PAUSE)
+            elif kill:
+                end = self.end
+                screen_x = offset_x + (end.x - min_x) * SCALE
+                screen_y = offset_y + (end.y - min_y) * SCALE
+                self.kill_drone(int(screen_x), int(screen_y))
+                kill = False
             sprites.draw(screen)
             pygame.display.flip()
 
