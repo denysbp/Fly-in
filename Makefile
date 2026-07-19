@@ -29,7 +29,7 @@ render: isolation
 	@PYGAME_HIDE_SUPPORT_PROMPT=1 $(VENV_PY) fly-in.py $(MAP) --visualizer
 
 install: $(VENV)/bin/activate
-	$(VENV_PIP) install -r requirements.txt
+	@$(VENV_PIP) install -r requirements.txt
 
 test: isolation
 	@PYGAME_HIDE_SUPPORT_PROMPT=1 $(VENV_PY) test.py

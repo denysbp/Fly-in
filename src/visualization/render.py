@@ -125,6 +125,35 @@ class DroneSprite(pygame.sprite.Sprite):
             self.image = self.frames[self.frame]
 
 
+def load_images() -> dict:
+    expl_anim: dict[Any, Any] = {}
+    expl_anim['lg'] = []
+    expl_anim['sm'] = []
+    for i in range(9):
+        file_name = f"regularExplosion0{i}.png"
+        img = pygame.image.load(path.join(damage_dir, file_name)).convert()
+        img.set_colorkey((0, 0, 0))
+        img_lg = pygame.transform.scale(img, (75, 75))
+        expl_anim["lg"].append(img_lg)
+        img_sm = pygame.transform.scale(img, (32, 32))
+        expl_anim["sm"].append(img_sm)
+    return expl_anim
+
+
+def load_mobs() -> dict:
+    mob_img: dict[str, Surface] = {}
+    mob_img["meteorBrown_med3"] = pygame.image.load(
+        path.join(img_dir, "meteorBrown_med3.png")).convert()
+    mob_img["meteorBrown_small1"] = pygame.image.load(
+        path.join(img_dir, "meteorBrown_small1.png")).convert()
+    mob_img["meteorBrown_small2"] = pygame.image.load(
+        path.join(img_dir, "meteorBrown_small2.png")).convert()
+    mob_img["meteorBrown_tiny1"] = pygame.image.load(
+        path.join(img_dir, "meteorBrown_tiny1.png")).convert()
+
+    return mob_img
+
+
 class Explosion(pygame.sprite.Sprite):
     """
     Explosion class
@@ -135,18 +164,7 @@ class Explosion(pygame.sprite.Sprite):
         """
         pygame.sprite.Sprite.__init__(self)
         self.size: str = size
-        self.expl_anim: dict[Any, Any] = {}
-        self.expl_anim['lg'] = []
-        self.expl_anim['sm'] = []
-        for i in range(9):
-            file_name = f"regularExplosion0{i}.png"
-            img = pygame.image.load(path.join(damage_dir, file_name)).convert()
-            img.set_colorkey((0, 0, 0))
-            img_lg = pygame.transform.scale(img, (75, 75))
-            self.expl_anim["lg"].append(img_lg)
-            img_sm = pygame.transform.scale(img, (32, 32))
-            self.expl_anim["sm"].append(img_sm)
-
+        self.expl_anim: dict[Any, Any] = load_images()
         self.image: Surface = self.expl_anim[self.size][0]
         self.rect: Rect = self.image.get_rect()
         self.rect.center = center
@@ -181,25 +199,11 @@ class Mob(pygame.sprite.Sprite):
         Initialize the Mob sprite
         """
         pygame.sprite.Sprite.__init__(self)
-        mob_img: dict[str, Surface] = {}
-        mob_img["meteorBrown_med3"] = pygame.image.load(
-            path.join(img_dir, "meteorBrown_med3.png")).convert()
-        mob_img["meteorBrown_small1"] = pygame.image.load(
-            path.join(img_dir, "meteorBrown_small1.png")).convert()
-        mob_img["meteorBrown_small2"] = pygame.image.load(
-            path.join(img_dir, "meteorBrown_small2.png")).convert()
-        mob_img["meteorBrown_tiny1"] = pygame.image.load(
-            path.join(img_dir, "meteorBrown_tiny1.png")).convert()
-        self.image_orig: Surface = choice([
-            mob_img["meteorBrown_med3"],
-            mob_img["meteorBrown_small1"],
-            mob_img["meteorBrown_tiny1"],
-            mob_img["meteorBrown_small2"]
-        ])
+        mob: dict[str, Surface] = load_mobs()
+        self.image_orig: Surface = choice(list(mob.values()))
         self.image_orig.set_colorkey((0, 0, 0))
         self.image: Surface = self.image_orig.copy()
         self.rect: Rect = self.image.get_rect()
-        self.radius: int = int(self.rect.width * 0.9 / 2)
         self.rect.x = randrange(WIDTH - self.rect.width)
         self.rect.y = randrange(-100, -40)
         self.speedy = randrange(1, 8)
@@ -386,7 +390,7 @@ class Render:
         coordinates.
         """
         if drone_info[4] and drone_info[2] is not None:
-            #  movind and destination is not None
+            #  moving and destination is not None
             zone = drone_info[2]
             return self.zone_screen_position(
                 zone, SCALE, offset_x, offset_y, min_x, min_y)
@@ -489,7 +493,12 @@ class Render:
                 round(screen_y + 10)
             )
 
-    def get_font(self, size: int, font: str) -> pygame.font.Font:
+    def get_font(
+        self,
+        size: int,
+        font: str,
+        bold: bool = False
+    ) -> pygame.font.Font:
         """
         Return a cached font with the requested size.
 
@@ -503,7 +512,7 @@ class Render:
             A ``pygame.font.Font`` object with the requested size.
         """
         if size not in self.fonts:
-            self.fonts[size] = pygame.font.SysFont(font, size)
+            self.fonts[size] = pygame.font.SysFont(font, size, bold)
         return self.fonts[size]
 
     def draw_text(
@@ -583,8 +592,8 @@ class Render:
         x6 = int(width * 0.62)
         y = panel_y + 18
 
-        title_font = pygame.font.SysFont("arial", title_size, bold=True)
-        body_font = pygame.font.SysFont("arial", small_size)
+        title_font = self.get_font(title_size, "arial", True)
+        body_font = self.get_font(small_size, "arial")
 
         title_text = title_font.render(
             "Simulation stats",
@@ -851,7 +860,7 @@ class Render:
         This function create a amount of mobs and add it to
         screen
         """
-        for i in range(amount):
+        for _ in range(amount):
             m = Mob()
             self.mobs.add(m)
             self.mobs.add(m)

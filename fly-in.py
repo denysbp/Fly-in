@@ -11,7 +11,7 @@ def main() -> None:
         test = False
         if "--visualizer" in sys.argv:
             visualizer = True
-        if "--test" in sys.argv:
+        elif "--test" in sys.argv:
             test = True
         elif len(sys.argv) != 2:
             print("Usage: main script <fly-in.py> <map>")
