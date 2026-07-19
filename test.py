@@ -37,12 +37,12 @@ def bench_mark() -> None:
     bench = {}
     for test in maps:
         result = subprocess.run(
-            f"make --no-print-directory run MAP={test} | wc -l",
+            f"make --no-print-directory run MAP={test} TEST=--test",
             capture_output=True,
             text=True,
             shell=True
         )
-        bench[test] = int(result.stdout.removesuffix("\n"))
+        bench[test] = int(result.stdout)
 
     for _ in trange(100, desc="Processing"):
         sleep(0.05)

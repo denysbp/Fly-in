@@ -8,8 +8,11 @@ from src import Render  # noqa: E402
 def main() -> None:
     try:
         visualizer = False
+        test = False
         if "--visualizer" in sys.argv:
             visualizer = True
+        if "--test" in sys.argv:
+            test = True
         elif len(sys.argv) != 2:
             print("Usage: main script <fly-in.py> <map>")
             return
@@ -29,8 +32,11 @@ def main() -> None:
         path = Pathfinder(generator.zones)
         engine = Engine(generator, path)
         engine.solver_path()
-        for c in engine.out_put:
-            print(c)
+        if test:
+            print(engine.turns)
+        else:
+            for c in engine.out_put:
+                print(c)
         if visualizer:
             render = Render(
                 generator.zones,

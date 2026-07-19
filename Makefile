@@ -1,6 +1,7 @@
 PY := python3
 PACKAGE := src/
 MAP ?= ./maps/easy/01_linear_path.txt
+TEST ?=
 MODELS := $(PACKAGE)models/
 VISUALIZATION := $(PACKAGE)visualization/
 VENV := .venv
@@ -22,7 +23,7 @@ $(VENV)/bin/activate: requirements.txt
 isolation: $(VENV)/bin/activate
 
 run: isolation
-	@PYGAME_HIDE_SUPPORT_PROMPT=1 $(VENV_PY) fly-in.py $(MAP)
+	@PYGAME_HIDE_SUPPORT_PROMPT=1 $(VENV_PY) fly-in.py $(MAP) $(TEST)
 
 render: isolation
 	@PYGAME_HIDE_SUPPORT_PROMPT=1 $(VENV_PY) fly-in.py $(MAP) --visualizer
