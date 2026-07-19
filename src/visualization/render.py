@@ -513,8 +513,8 @@ class Render:
         x: int,
         y: int,
         text: str,
-        color: Color = (255, 255, 255),
-        font: str = "arial"
+        color: Union[Color | None] = None,
+        fontt: str = "arial"
     ) -> None:
         """
         Draw text on the given surface.
@@ -522,8 +522,13 @@ class Render:
         Render the text using the specified font size and draw it
         centered at the given screen position.
         """
-        font = self.get_font(size, font)
-        text_surface = font.render(text, True, color)
+        font = self.get_font(size, fontt)
+        if color is None:
+            base_color = pygame.color.Color("white")
+        else:
+            r, g, b = color.RED
+            base_color = pygame.color.Color(r, g, b)
+        text_surface = font.render(text, True, base_color)
         text_rect = text_surface.get_rect()
         text_rect.midtop = (x, y)
         surface.blit(text_surface, text_rect)
@@ -863,7 +868,7 @@ class Render:
                 x,
                 y,
                 "ALL DRONES ARE DIED",
-                self.color.RED,
+                self.color,
                 "Raleway Bold"
             )
 

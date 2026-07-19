@@ -2,6 +2,9 @@ from os import path
 
 
 class Color:
+    """
+    Custom color class
+    """
     def __init__(self) -> None:
         """
         Color base class
