@@ -523,6 +523,16 @@ class Parser:
 
 
 if __name__ == "__main__":
+    """
+    Dear programer:
+    when I wrote this code only god and i knew how it worked.
+    Now, only god knows it!
+
+    Therefore. if you are trying to optimize
+    this rountine and it fails (most surely).
+    please revert the commit and never touch this
+    parsing again!!!!!!
+    """
     if len(sys.argv) > 2:
         print(f"Rejecting: {sys.argv[2:]}")
     file = sys.argv[1]

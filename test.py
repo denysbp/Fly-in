@@ -74,4 +74,5 @@ def bench_mark() -> None:
             sleep(1)
 
 
-bench_mark()
+if __name__ == "__main__":
+    bench_mark()
