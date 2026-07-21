@@ -296,12 +296,9 @@ All architectural decisions, implementation, algorithms and code were designed, 
 
 ---
 
-# Future Improvements
+# Improvements
 
 * Dynamic obstacle visualization.
 * Particle effects.
-* Multiple routing algorithms.
 * Performance benchmarking.
-* Additional map themes.
 * Interactive simulation controls.
-* Performance optimizations.
