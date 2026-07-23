@@ -1,4 +1,5 @@
 from os import environ, path
+import math
 from random import randint, randrange, choice
 from typing import List, Union, Any
 from ..models import ZoneColor
@@ -448,7 +449,7 @@ class Render:
             drone_info[0]: drone_info for drone_info in previous_turn
         }
         for drone_info in current_turn:
-            sprite = self.sprites[drone_info[0]]
+            sprite: DroneSprite = self.sprites[drone_info[0]]
             previous_drone_info = previous_turn_by_id.get(
                 drone_info[0],
                 drone_info
@@ -506,7 +507,7 @@ class Render:
             size: Font size in pixels.
 
         Returns:
-            A ``pygame.font.Font`` object with the requested size.
+            A pygame.font.Font object with the requested size.
         """
         if size not in self.fonts:
             self.fonts[size] = pygame.font.SysFont(font, size, bold)
@@ -859,7 +860,6 @@ class Render:
         """
         for _ in range(amount):
             m = Mob()
-            self.mobs.add(m)
             self.mobs.add(m)
 
     def over_game(self, screen: Surface, OVER: bool, killed: int) -> None:

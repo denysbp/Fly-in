@@ -4,7 +4,6 @@ from time import sleep
 from rich.console import Console
 from rich.table import Table
 from rich.live import Live
-import os
 
 
 def bench_mark() -> None:
@@ -46,7 +45,7 @@ def bench_mark() -> None:
 
     for _ in trange(100, desc="Processing"):
         sleep(0.05)
-    os.system("clear")
+    subprocess.run("clear")
 
     console = Console()
     table = Table(title="BENCH MARK")
