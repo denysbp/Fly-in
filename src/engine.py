@@ -35,7 +35,6 @@ class Pathfinder:
         pq = [(0, counter, start)]
         heapify(pq)
 
-        # set for visiteds
         visited = set()
         current_zone: "Zone"
         while pq:  # While the priority queue isn't empty
@@ -78,30 +77,6 @@ class Pathfinder:
         return path
 
 
-class Color:
-    """
-    Class for Color
-    """
-    def __init__(self) -> None:
-        self.deacivated = '\033[0m'
-        self.black = '\033[30m'
-        self.red = '\033[31m'
-        self.green = '\033[32m'
-        self.orange = '\033[33m'
-        self.blue = '\033[34m'
-        self.purple = '\033[35m'
-        self.cyan = '\033[36m'
-        self.lightgrey = '\033[37m'
-        self.darkgrey = '\033[90m'
-        self.lightred = '\033[91m'
-        self.lightgreen = '\033[92m'
-        self.yellow = '\033[93m'
-        self.lightblue = '\033[94m'
-        self.pink = '\033[95m'
-        self.lightcyan = '\033[96m'
-        self.end = '\033[m'
-
-
 class Engine:
     def __init__(self, generator: "Generator", path_finder: "Pathfinder"):
         self.pathfinder: Pathfinder = path_finder
@@ -113,7 +88,6 @@ class Engine:
         self.end: "Zone" = generator.end
         self.turns: int = 0
         self.out_put: List[str] = []
-        self.color: Color = Color()
         self.reverved: dict = {}
 
     def solver_path(self) -> None:

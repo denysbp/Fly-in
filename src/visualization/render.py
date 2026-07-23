@@ -109,9 +109,6 @@ class DroneSprite(pygame.sprite.Sprite):
         self.solved = solved
         self.rect.center = (x, y)
         self.update_image()
-        # if self.solved:
-        #     self.kill()
-        # else:
 
     def update_image(self) -> None:
         """
